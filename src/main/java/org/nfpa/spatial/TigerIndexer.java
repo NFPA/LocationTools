@@ -67,8 +67,6 @@ public class TigerIndexer {
 
     protected void initIndexer() throws IOException{
 
-        System.out.println("Jpostal shared library: " + System.getProperty("java.library.path"));
-
         this.directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
 
         IndexWriterConfig iwConfig = new IndexWriterConfig(new StandardAnalyzer());
