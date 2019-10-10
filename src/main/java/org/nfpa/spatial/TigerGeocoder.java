@@ -23,35 +23,16 @@ import org.apache.lucene.spatial.query.SpatialArgs;
 import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.geotools.data.FeatureReader;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.map.FeatureLayer;
-import org.geotools.map.MapContent;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.styling.Font;
-import org.geotools.styling.*;
-import org.geotools.swing.JMapFrame;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
 import org.locationtech.spatial4j.distance.DistanceUtils;
 import org.locationtech.spatial4j.io.ShapeIO;
 import org.locationtech.spatial4j.io.ShapeReader;
 import org.locationtech.spatial4j.shape.Point;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
-import java.awt.*;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -67,6 +48,7 @@ public class TigerGeocoder {
     private static SpatialStrategy strategy;
     private static Directory directory;
     private static ShapeReader shapeReader;
+    private static Interpolator interpolator;
     private static FileSystem hdfs;
     private static AddressParser p;
     private static Map<String, Method> methodMap;
@@ -76,15 +58,17 @@ public class TigerGeocoder {
     private static final String INDEX_DIRECTORY = "index";
     private static Configuration hConf;
 
-    private static void initGeoStuff(){
+    private static void initGeoStuff() throws IOException {
         ctx = JtsSpatialContext.GEO;
         shapeReader = ctx.getFormats().getReader(ShapeIO.WKT);
         int maxLevels = 5; //precision for geohash
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
+
+        interpolator = new Interpolator();
     }
 
-    private static void init() {
+    private static void init() throws IOException {
         initGeoStuff();
         initHadoop();
         initLibPostal();
@@ -242,35 +226,33 @@ public class TigerGeocoder {
         return String.join(" ", elems);
     }
 
-    private static Query makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
+    private static ModQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
         ParsedComponent[] addComp = p.parseAddress(address);
         Query query = new MatchAllDocsQuery();
 
+        ModQuery mQuery = new ModQuery();
+
         for(ParsedComponent comp: addComp){
+            mQuery.addInputField(comp.getLabel(), comp.getValue());
             if (methodMap.containsKey(comp.getLabel())) {
-                System.out.println(comp.getLabel() + " : " + comp.getValue());
-                System.out.println(comp.getValue() + " --> " + replaceWithAbbrev(comp.getValue()));
-//                Object[] parameters = {query, comp.getValue()};
+                System.out.println(comp.getLabel() + " : " + replaceWithAbbrev(comp.getValue()));
                 Object[] parameters = {query, replaceWithAbbrev(comp.getValue())};
                 query = (Query) methodMap.get(comp.getLabel()).invoke(null, parameters);
             }
         }
-        return query;
+        mQuery.setQuery(query);
+        return mQuery;
     }
 
-    private void printResults(TopDocs results, IndexSearcher indexSearcher, Query q) throws IOException {
+    private void printResults(TopDocs results, IndexSearcher indexSearcher, ModQuery mQuery) throws IOException {
         Document doc1;
         System.out.println(results.totalHits.value);
 
         if (results.totalHits.value > 0) {
             for (int i=0; i < 3 && i < results.scoreDocs.length; i++){
-//          for (int i=0; i < results.scoreDocs.length; i++){
                 System.out.println("Result: " + i);
-//                Explanation exp = indexSearcher.explain(q, i);
-//                for (Explanation nexp: exp.getDetails()){
-//                    System.out.println(nexp.getDescription());
-//                }
+
                 doc1 = indexSearcher.doc(results.scoreDocs[i].doc);
                 System.out.println("Score: " + results.scoreDocs[i].score);
                 for (IndexableField field : doc1) {
@@ -290,73 +272,21 @@ public class TigerGeocoder {
         IndexReader indexReader = DirectoryReader.open(directory);
         IndexSearcher indexSearcher = new IndexSearcher(indexReader);
 
-        Query searchQuery = makePostalQuery(address);
+        ModQuery mQuery = makePostalQuery(address);
+        Query searchQuery = mQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, 20);
-        printResults(topDocs, indexSearcher, searchQuery);
-//        mapResults(topDocs, indexSearcher);
+        printResults(topDocs, indexSearcher, mQuery);
+//        mapResults(topDocs, indexSearcher, mQuery);
     }
 
-    private void mapResults(TopDocs results, IndexSearcher indexSearcher) throws IOException, org.locationtech.jts.io.ParseException {
+    private void mapResults(TopDocs results, IndexSearcher indexSearcher, ModQuery modQuery) throws IOException, org.locationtech.jts.io.ParseException {
 
         if (results.totalHits.value < 1) return;
 
-        MapContent map = new MapContent();
-        map.setTitle("Search Results");
+        Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
+        int hno = Integer.parseInt(modQuery.get("house_number"));
 
-        WKTReader wktReader = new WKTReader();
-        LineString line;
-
-
-        SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
-        typeBuilder.setName("edge");
-        typeBuilder.add("the_geom", LineString.class);
-        typeBuilder.add("COUNTY", String.class);
-        typeBuilder.setCRS( DefaultGeographicCRS.WGS84);
-
-        SimpleFeatureType TYPE = typeBuilder.buildFeatureType();
-
-        Document doc1;
-        DefaultFeatureCollection lineCollection = new DefaultFeatureCollection();;
-        if (results.totalHits.value > 0) {
-            for (int i = 0; i < results.scoreDocs.length; i++) {
-                doc1 = indexSearcher.doc(results.scoreDocs[i].doc);
-                line = (LineString) wktReader.read(doc1.get("GEOMETRY"));
-
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(TYPE);
-                builder.add(line);
-                builder.add(doc1.get("COUNTY") + " " + doc1.get("ZIPL"));
-
-                SimpleFeature lineFeature = builder.buildFeature("" + i);
-                lineCollection.add(lineFeature);
-            }
-        }
-
-        Style style = SLD.createLineStyle(Color.RED, 2);
-        StyleBuilder styleBuilder = new StyleBuilder();
-        String attributeName = "COUNTY";
-        Font font = styleBuilder.createFont("Ubuntu", 18.0);
-        TextSymbolizer textSymb = styleBuilder.createTextSymbolizer(Color.black, font, attributeName);
-        Rule rule = styleBuilder.createRule(textSymb);
-        style.featureTypeStyles().get(0).rules().add(rule);
-
-        map.addLayer(new FeatureLayer(lineCollection, style));
-
-        File file = new File("src/main/resources/tl_2018_us_state/tl_2018_us_state.shp");
-        if (file == null) {
-            System.out.println("No canvas Found");
-            JMapFrame.showMap(map);
-            return;
-        }
-        FileDataStore store = FileDataStoreFinder.getDataStore(file);
-        SimpleFeatureSource featureSource = store.getFeatureSource();
-
-        final FeatureReader<SimpleFeatureType, SimpleFeature> reader = store.getFeatureReader();
-        Style usStyle = SLD.createPolygonStyle(Color.BLUE,null, (float) 0.4);
-        map.addLayer(new FeatureLayer(featureSource, usStyle));
-        reader.close();
-
-        JMapFrame.showMap(map);
-
+        interpolator.mapWTKInterpolations(resultDoc, hno);
     }
 
     private void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
