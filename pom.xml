@@ -12,8 +12,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <geotools.version>22-SNAPSHOT</geotools.version>
         <spark.version>2.3.3</spark.version>
+        <spark.compatible.verison>2.3</spark.compatible.verison>
+        <geospark.version>1.2.0</geospark.version>
         <hadoop.version>2.7.7</hadoop.version>
         <lucene.version>8.2.0</lucene.version>
+        <dependency.scope>compile</dependency.scope>
+        <scala.version>2.11</scala.version>
     </properties>
 
     <dependencies>
@@ -79,6 +83,21 @@
             <scope>${dependency.scope}</scope>
         </dependency>
 
+
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-yarn -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-yarn_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.version}</artifactId>
+            <version>${spark.version}</version>
+            <scope>${dependency.scope}</scope>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -115,6 +134,35 @@
             <version>1.1.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>geospark</artifactId>
+            <version>${geospark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>geospark-sql_${spark.compatible.verison}</artifactId>
+            <version>${geospark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>geospark-viz_${spark.compatible.verison}</artifactId>
+            <version>${geospark.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.datasyslab</groupId>
+            <artifactId>sernetcdf</artifactId>
+            <version>0.1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+            <version>4.1.17.Final</version>
+        </dependency>
 
     </dependencies>
 
