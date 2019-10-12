@@ -33,7 +33,9 @@ public class TigerProcessor {
     private static Configuration hConf;
 
     private void initSpark(){
-        SparkConf conf = new SparkConf().setAppName("Test").setMaster("local[*]");
+        SparkConf conf = new SparkConf()
+                .setAppName("Test");
+//                .setMaster("local[*]");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
         spark = SparkSession.builder().config(conf).getOrCreate();
