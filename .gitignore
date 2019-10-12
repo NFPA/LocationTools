@@ -3,7 +3,10 @@
 
 # Ignore index directory
 index
+
+# Maven generated
 target
+dependency-reduced-pom.xml
 
 # User-specific stuff
 .idea/**/workspace.xml
