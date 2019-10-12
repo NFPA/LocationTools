@@ -1,5 +1,6 @@
 package org.nfpa.spatial;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -21,10 +22,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 public class TigerProcessor {
 
@@ -34,8 +32,8 @@ public class TigerProcessor {
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("Test");
-//                .setMaster("local[*]");
+                .setAppName("TigerProcessor")
+                .setMaster("local[*]");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
         spark = SparkSession.builder().config(conf).getOrCreate();
@@ -47,9 +45,6 @@ public class TigerProcessor {
 
     private void initHadoop(){
         hConf = new Configuration();
-//        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/core-site.xml"));
-//        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/hdfs-site.xml"));
-
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
         );
@@ -69,19 +64,35 @@ public class TigerProcessor {
         return new String(encoded, encoding);
     }
 
-    private Dataset readDF(String base_dir, String directory) throws IOException {
-
-        Path dirPath = new Path(base_dir + directory);
+    private static List<String> listDirectories(String path, boolean ABS) throws IOException {
+        Path dirPath = new Path(path);
         FileSystem fSystem = dirPath.getFileSystem(hConf);
         FileStatus[] dirFileStatuses = fSystem.listStatus(dirPath);
 
         List<String> directories = new ArrayList<>();
 
         for (FileStatus fs : dirFileStatuses) {
-            directories.add(base_dir + directory + "/" + fs.getPath().getName());
+            if (ABS){
+                directories.add(path + "/" + fs.getPath().getName());
+            }
+            else {
+                directories.add(fs.getPath().getName());
+            }
         }
-        System.out.println(Arrays.asList(directories));
-        ListIterator<String> it = directories.listIterator();
+        return directories;
+    }
+
+    private Dataset readDF(String base_dir, String directory, String state) throws IOException {
+
+        List<String> sub_directories = listDirectories(base_dir + directory, true);
+
+        if (directory.equals("edges") || directory.equals("faces")){
+            sub_directories = filterStateDirs(sub_directories, state);
+        }
+
+        System.out.println(directory + " : " + state + " : " + sub_directories.size());
+
+        ListIterator<String> it = sub_directories.listIterator();
 
         Dataset returnDF = Adapter.toDf(
                 ShapefileReader.readToGeometryRDD(jsc, it.next()),
@@ -101,41 +112,67 @@ public class TigerProcessor {
         return  returnDF;
     }
 
-    public static void main(String[] args) throws IOException {
+    private static HashSet<String> getUniqueStates(List<String> directories){
+        HashSet<String> states = new HashSet();
+        for (String dir : directories) {
+            states.add(dir.split("_")[2].substring(0, 2));
+        }
+        return states;
+    }
 
-//        String TIGER_BASE = "hdfs://localhost:9000/user/hduser/TIGER2018/";
+    private static List<String> filterStateDirs(List<String> directories, String state){
+        List<String> filteredDirectories = new ArrayList<>();
+        for (String dir : directories){
+            if (FilenameUtils.getBaseName(dir).startsWith("tl_2018_" + state)){
+                filteredDirectories.add(dir);
+            }
+        }
+        return filteredDirectories;
+    }
+
+    public static void main(String[] args) throws IOException {
         String TIGER_BASE = args[0];
 
         TigerProcessor fr = new TigerProcessor();
         fr.initSpark();
         fr.initHadoop();
 
-        Dataset edgesDF = fr.readDF(TIGER_BASE, "edges");
-        Dataset countyDF = fr.readDF(TIGER_BASE, "county");
-        Dataset facesDF = fr.readDF(TIGER_BASE, "faces");
-        Dataset placeDF = fr.readDF(TIGER_BASE, "place");
-        Dataset stateDF = fr.readDF(TIGER_BASE, "state");
+        HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));
 
-        edgesDF.createOrReplaceTempView("edges");
+        Dataset countyDF = fr.readDF(TIGER_BASE, "county", "ALL");
+        Dataset placeDF = fr.readDF(TIGER_BASE, "place", "ALL");
+        Dataset stateDF = fr.readDF(TIGER_BASE, "state", "ALL");
+
         countyDF.createOrReplaceTempView("county");
-        facesDF.createOrReplaceTempView("faces");
         placeDF.createOrReplaceTempView("place");
         stateDF.createOrReplaceTempView("state");
 
         String query = readFile("./resources/join.sql");
-
         System.out.println("Join query:\n" + query);
 
-        Dataset joinedData = spark.sql(query);
+        Dataset edgesDF, facesDF;
 
-        joinedData.show(10);
+        for (String state :availableStates){
+            System.out.println("State: " + state);
+            facesDF = fr.readDF(TIGER_BASE, "faces", state);
+            edgesDF = fr.readDF(TIGER_BASE, "edges", state);
 
-        joinedData
-                .write()
-                .option("header", true)
-                .option("delimiter", "\t")
-                .option("quote", "\u0000")
-                .csv(TIGER_BASE + "processed");
+            facesDF.createOrReplaceTempView("faces");
+            edgesDF.createOrReplaceTempView("edges");
+
+            Dataset joinedData = spark.sql(query);
+
+            joinedData.show(10);
+
+            joinedData
+                    .write()
+                    .option("header", true)
+                    .option("delimiter", "\t")
+                    .option("quote", "\u0000")
+                    .csv(TIGER_BASE + "processed/" + state);
+
+        }
+
         jsc.stop();
     }
 }
