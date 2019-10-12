@@ -101,7 +101,8 @@ public class TigerProcessor {
 
     public static void main(String[] args) throws IOException {
 
-        String TIGER_BASE = "hdfs://localhost:9000/user/hduser/TIGER2018/";
+//        String TIGER_BASE = "hdfs://localhost:9000/user/hduser/TIGER2018/";
+        String TIGER_BASE = args[0];
 
         TigerProcessor fr = new TigerProcessor();
         fr.initSpark();
@@ -132,7 +133,7 @@ public class TigerProcessor {
                 .option("header", true)
                 .option("delimiter", "\t")
                 .option("quote", "\u0000")
-                .csv("hdfs://localhost:9000/user/hduser/TIGER2018/processed");
+                .csv(TIGER_BASE + "processed");
         jsc.stop();
     }
 }
