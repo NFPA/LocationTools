@@ -45,8 +45,15 @@ public class TigerProcessor {
 
     private void initHadoop(){
         hConf = new Configuration();
-        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/core-site.xml"));
-        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/hdfs-site.xml"));
+//        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/core-site.xml"));
+//        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/hdfs-site.xml"));
+
+        hConf.set("fs.hdfs.impl",
+                org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
+        );
+        hConf.set("fs.file.impl",
+                org.apache.hadoop.fs.LocalFileSystem.class.getName()
+        );
     }
 
     static String readFile(String path, Charset encoding)  throws IOException {
