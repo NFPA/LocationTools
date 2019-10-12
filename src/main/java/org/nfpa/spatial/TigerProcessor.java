@@ -150,7 +150,7 @@ public class TigerProcessor {
         String query = readFile("./resources/join.sql");
         System.out.println("Join query:\n" + query);
 
-        Dataset edgesDF, facesDF;
+        Dataset edgesDF, facesDF, joinedData;
 
         for (String state :availableStates){
             System.out.println("State: " + state);
@@ -160,7 +160,7 @@ public class TigerProcessor {
             facesDF.createOrReplaceTempView("faces");
             edgesDF.createOrReplaceTempView("edges");
 
-            Dataset joinedData = spark.sql(query);
+            joinedData = spark.sql(query);
 
             joinedData.show(10);
 
