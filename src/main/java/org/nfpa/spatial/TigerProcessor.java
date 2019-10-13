@@ -134,32 +134,33 @@ public class TigerProcessor {
         String TIGER_BASE = args[0];
 
         TigerProcessor fr = new TigerProcessor();
-        fr.initSpark();
+
         fr.initHadoop();
+        String query = readFile("./resources/join.sql");
 
         HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));
 
-        Dataset countyDF = fr.readDF(TIGER_BASE, "county", "ALL");
-        Dataset placeDF = fr.readDF(TIGER_BASE, "place", "ALL");
-        Dataset stateDF = fr.readDF(TIGER_BASE, "state", "ALL");
-
-        countyDF.createOrReplaceTempView("county");
-        placeDF.createOrReplaceTempView("place");
-        stateDF.createOrReplaceTempView("state");
-
-        String query = readFile("./resources/join.sql");
-        System.out.println("Join query:\n" + query);
-
-        Dataset edgesDF, facesDF, joinedData;
-
         for (String state :availableStates){
+            fr.initSpark();
+            Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
+
             System.out.println("State: " + state);
+
+            countyDF = fr.readDF(TIGER_BASE, "county", "ALL");
+            placeDF = fr.readDF(TIGER_BASE, "place", "ALL");
+            stateDF = fr.readDF(TIGER_BASE, "state", "ALL");
+
+            countyDF.createOrReplaceTempView("county");
+            placeDF.createOrReplaceTempView("place");
+            stateDF.createOrReplaceTempView("state");
+
             facesDF = fr.readDF(TIGER_BASE, "faces", state);
             edgesDF = fr.readDF(TIGER_BASE, "edges", state);
 
             facesDF.createOrReplaceTempView("faces");
             edgesDF.createOrReplaceTempView("edges");
 
+            System.out.println("Join query:\n" + query);
             joinedData = spark.sql(query);
 
             joinedData.show(10);
@@ -170,9 +171,7 @@ public class TigerProcessor {
                     .option("delimiter", "\t")
                     .option("quote", "\u0000")
                     .csv(TIGER_BASE + "processed/" + state);
-
+            jsc.stop();
         }
-
-        jsc.stop();
     }
 }
