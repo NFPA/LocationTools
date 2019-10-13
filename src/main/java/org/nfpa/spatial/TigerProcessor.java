@@ -43,7 +43,7 @@ public class TigerProcessor {
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
-    private void initHadoop(){
+    private static void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -133,14 +133,15 @@ public class TigerProcessor {
     public static void main(String[] args) throws IOException {
         String TIGER_BASE = args[0];
 
-        TigerProcessor fr = new TigerProcessor();
 
-        fr.initHadoop();
+
+        initHadoop();
         String query = readFile("./resources/join.sql");
 
         HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));
 
         for (String state :availableStates){
+            TigerProcessor fr = new TigerProcessor();
             fr.initSpark();
             Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
 
@@ -172,6 +173,9 @@ public class TigerProcessor {
                     .option("quote", "\u0000")
                     .csv(TIGER_BASE + "processed/" + state);
             jsc.stop();
+
+            fr = null;
+            System.gc();
         }
     }
 }
