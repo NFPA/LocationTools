@@ -171,7 +171,7 @@ public class TigerIndexer {
         TigerIndexer tigerIndexer = new TigerIndexer();
         tigerIndexer.initGeoStuff();
         tigerIndexer.initHadoop();
-        
+
         String TIGER_PROCESSED = args[0];
 
         List<String> csvFiles = getCSVFiles(TIGER_PROCESSED);
