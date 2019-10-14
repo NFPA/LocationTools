@@ -167,6 +167,23 @@ public class TigerIndexer {
         return csvFiles;
     }
 
+    public static List<String> getAllFilePath(String baseDir) throws IOException {
+        Path tigerProcessedPath = new Path(baseDir);
+        hdfs = tigerProcessedPath.getFileSystem(hConf);
+        List<String> csvFiles = new ArrayList();
+        FileStatus[] fileStatuses = hdfs.listStatus(tigerProcessedPath);
+        for (FileStatus fileStat : fileStatuses) {
+            if (fileStat.isDirectory()) {
+                csvFiles.addAll(getAllFilePath(baseDir + fileStat.getPath().getName() + "/"));
+            } else {
+                if(fileStat.getPath().getName().endsWith(".csv")){
+                    csvFiles.add(baseDir + fileStat.getPath().getName());
+                }
+            }
+        }
+        return csvFiles;
+    }
+
     public static void main (String[] args) throws IOException {
         TigerIndexer tigerIndexer = new TigerIndexer();
         tigerIndexer.initGeoStuff();
@@ -174,7 +191,10 @@ public class TigerIndexer {
 
         String TIGER_PROCESSED = args[0];
 
-        List<String> csvFiles = getCSVFiles(TIGER_PROCESSED);
+        System.out.println(TIGER_PROCESSED);
+
+        List<String> csvFiles = getAllFilePath(TIGER_PROCESSED);
+        System.out.println(csvFiles);
 
         try {
             tigerIndexer.initIndexer();
