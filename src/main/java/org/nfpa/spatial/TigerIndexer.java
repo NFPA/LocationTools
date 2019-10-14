@@ -171,8 +171,8 @@ public class TigerIndexer {
         TigerIndexer tigerIndexer = new TigerIndexer();
         tigerIndexer.initGeoStuff();
         tigerIndexer.initHadoop();
-
-        String TIGER_PROCESSED = "hdfs://localhost:9000/user/hduser/TIGER2018/processed/";
+        
+        String TIGER_PROCESSED = args[0];
 
         List<String> csvFiles = getCSVFiles(TIGER_PROCESSED);
 
@@ -182,10 +182,6 @@ public class TigerIndexer {
                 tigerIndexer.indexFile(csvFile, indexWriter);
             }
             tigerIndexer.finishIndexer();
-//            tigerIndexer.spatialSearch();
-//            tigerIndexer.search();
-
-//            tigerIndexer.parseAddress("36 John St, Worcester, MA");
         }
         catch (Exception e){
             System.out.println(Arrays.toString(e.getStackTrace()));
