@@ -110,7 +110,14 @@ public class TigerIndexer {
                 .parse(in);
 
         for (CSVRecord record : records) {
-            indexWriter.addDocument(newDocument(record));
+            try{
+                indexWriter.addDocument(newDocument(record));
+            }
+            catch (Exception e){
+                System.out.println("Bad Record: " + e.toString());
+                System.out.println(filePath);
+            }
+
         }
         indexWriter.commit();
         System.out.println("Index Successful: " + filePath);
