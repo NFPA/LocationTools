@@ -32,8 +32,7 @@ public class TigerProcessor {
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("TigerProcessor")
-                .setMaster("local[*]");
+                .setAppName("TigerProcessor");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
         spark = SparkSession.builder().config(conf).getOrCreate();
