@@ -86,7 +86,7 @@ public class TigerProcessor {
 
         List<String> sub_directories = listDirectories(base_dir + directory, true);
 
-        if (directory.equals("edges") || directory.equals("faces")){
+        if (!state.equals("ALL")){
             sub_directories = filterStateDirs(sub_directories, state);
         }
 
@@ -133,49 +133,38 @@ public class TigerProcessor {
     public static void main(String[] args) throws IOException {
         String TIGER_BASE = args[0];
 
-
-
         initHadoop();
         String query = readFile("./resources/join.sql");
+        TigerProcessor processor = new TigerProcessor();
+        processor.initSpark();
+        Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
 
-        HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));
 
-        for (String state :availableStates){
-            TigerProcessor fr = new TigerProcessor();
-            fr.initSpark();
-            Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
+        countyDF = processor.readDF(TIGER_BASE, "county", "ALL");
+        placeDF = processor.readDF(TIGER_BASE, "place", "ALL");
+        stateDF = processor.readDF(TIGER_BASE, "state", "ALL");
 
-            System.out.println("State: " + state);
+        countyDF.createOrReplaceTempView("county");
+        placeDF.createOrReplaceTempView("place");
+        stateDF.createOrReplaceTempView("state");
 
-            countyDF = fr.readDF(TIGER_BASE, "county", "ALL");
-            placeDF = fr.readDF(TIGER_BASE, "place", "ALL");
-            stateDF = fr.readDF(TIGER_BASE, "state", "ALL");
+        facesDF = processor.readDF(TIGER_BASE, "faces", "ALL");
+        edgesDF = processor.readDF(TIGER_BASE, "edges", "ALL");
 
-            countyDF.createOrReplaceTempView("county");
-            placeDF.createOrReplaceTempView("place");
-            stateDF.createOrReplaceTempView("state");
+        facesDF.createOrReplaceTempView("faces");
+        edgesDF.createOrReplaceTempView("edges");
 
-            facesDF = fr.readDF(TIGER_BASE, "faces", state);
-            edgesDF = fr.readDF(TIGER_BASE, "edges", state);
+        System.out.println("Join query:\n" + query);
+        joinedData = spark.sql(query);
 
-            facesDF.createOrReplaceTempView("faces");
-            edgesDF.createOrReplaceTempView("edges");
+        joinedData.show(10);
 
-            System.out.println("Join query:\n" + query);
-            joinedData = spark.sql(query);
-
-            joinedData.show(10);
-
-            joinedData
-                    .write()
-                    .option("header", true)
-                    .option("delimiter", "\t")
-                    .option("quote", "\u0000")
-                    .csv(TIGER_BASE + "processed/" + state);
-            jsc.stop();
-
-            fr = null;
-            System.gc();
-        }
+        joinedData
+                .write()
+                .option("header", true)
+                .option("delimiter", "\t")
+                .option("quote", "\u0000")
+                .csv(TIGER_BASE + "processed/" + "ALL");
+        jsc.stop();
     }
 }
