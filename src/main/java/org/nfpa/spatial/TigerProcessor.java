@@ -39,9 +39,10 @@ public class TigerProcessor {
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
+        jsc.setLogLevel("INFO");
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
-        Logger.getLogger("org").setLevel(Level.WARN);
-        Logger.getLogger("akka").setLevel(Level.WARN);
+        Logger.getLogger("org").setLevel(Level.INFO);
+        Logger.getLogger("akka").setLevel(Level.INFO);
     }
 
     private static void initHadoop(){
