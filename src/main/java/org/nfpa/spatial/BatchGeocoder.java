@@ -62,12 +62,6 @@ public class BatchGeocoder {
         );
     }
 
-    static String readFile(String path)  throws IOException {
-        Charset encoding = StandardCharsets.UTF_8;
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, encoding);
-    }
-
     private void callBG(String csvPath){
         Dataset<Row> dataFrame = spark.read().format("csv")
                 .option("sep", ",")

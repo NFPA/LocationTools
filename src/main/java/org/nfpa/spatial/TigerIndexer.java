@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.document.TextField;
@@ -39,6 +40,8 @@ public class TigerIndexer {
     private static FileSystem hdfs;
     public static final String INDEX_DIRECTORY = "index";
     private static Configuration hConf;
+
+    private static Logger logger = Logger.getLogger(TigerIndexer.class);
 
     protected void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
@@ -97,8 +100,6 @@ public class TigerIndexer {
 
         FSDataInputStream inputStream = hdfs.open(csvPath);
 
-//        System.out.println(IOUtils.toString(inputStream, "UTF-8"));
-
         Reader in = new InputStreamReader(inputStream);
         Iterable<CSVRecord> records = CSVFormat.RFC4180
                 .withDelimiter('\t')
@@ -111,13 +112,13 @@ public class TigerIndexer {
                 indexWriter.addDocument(newDocument(record));
             }
             catch (Exception e){
-                System.out.println("Bad Record: " + e.toString());
-                System.out.println(filePath);
+                logger.info("Bad Record: " + e.toString());
+                logger.info(filePath);
             }
 
         }
         indexWriter.commit();
-        System.out.println("Index Successful: " + filePath);
+        logger.info("Index Successful: " + filePath);
     }
 
     private Document newDocument(CSVRecord record) throws IOException, ParseException {
@@ -195,10 +196,10 @@ public class TigerIndexer {
 
         String TIGER_PROCESSED = args[0];
 
-        System.out.println(TIGER_PROCESSED);
+        logger.info(TIGER_PROCESSED);
 
         List<String> csvFiles = getAllFilePath(TIGER_PROCESSED);
-        System.out.println(csvFiles);
+        logger.info(csvFiles);
 
         try {
             tigerIndexer.initIndexer();
@@ -208,7 +209,7 @@ public class TigerIndexer {
             tigerIndexer.finishIndexer();
         }
         catch (Exception e){
-            System.out.println(Arrays.toString(e.getStackTrace()));
+            logger.info(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
         }
         finally {

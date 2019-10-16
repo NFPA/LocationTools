@@ -30,6 +30,8 @@ public class TigerProcessor {
     private static SparkSession spark;
     private static Configuration hConf;
 
+    private static Logger logger = Logger.getLogger(TigerProcessor.class);
+
     private void initSpark(){
         SparkConf conf = new SparkConf()
                 .setAppName("TigerProcessor");
@@ -50,11 +52,6 @@ public class TigerProcessor {
         hConf.set("fs.file.impl",
                 org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
-    }
-
-    static String readFile(String path, Charset encoding)  throws IOException {
-        byte[] encoded = Files.readAllBytes(Paths.get(path));
-        return new String(encoded, encoding);
     }
 
     static String readFile(String path)  throws IOException {
@@ -83,40 +80,39 @@ public class TigerProcessor {
 
     private Dataset readDF(String base_dir, String directory, String state) throws IOException {
 
-        List<String> sub_directories = listDirectories(base_dir + directory, true);
+        List<String> subDirectories = listDirectories(base_dir + directory, true);
 
         if (!state.equals("ALL")){
-            sub_directories = filterStateDirs(sub_directories, state);
+            subDirectories = filterStateDirs(subDirectories, state);
         }
 
-        System.out.println(directory + " : " + state + " : " + sub_directories.size());
+        logger.info(directory + " : " + state + " : " + subDirectories.size());
 
-        ListIterator<String> it = sub_directories.listIterator();
+        ListIterator<String> it = subDirectories.listIterator();
 
         Dataset returnDF = Adapter.toDf(
                 ShapefileReader.readToGeometryRDD(jsc, it.next()),
                 spark);
 
+        int totalCount = subDirectories.size();
+        int currentCount = 1;
+        String currentFPath;
+
         while (it.hasNext()){
+            currentFPath = it.next();
             try{
                 SpatialRDD tmpRDD = ShapefileReader.readToGeometryRDD(jsc,
-                        it.next());
+                        currentFPath);
                 Dataset tmpDF = Adapter.toDf(tmpRDD, spark);
                 returnDF = returnDF.unionAll(tmpDF);
+                logger.info(state + ": " + currentCount + " of " + totalCount);
             } catch (Exception e){
-
+                logger.info("Error in file: " + currentFPath);
+                logger.info(e.toString());
             }
         }
 
         return  returnDF;
-    }
-
-    private static HashSet<String> getUniqueStates(List<String> directories){
-        HashSet<String> states = new HashSet();
-        for (String dir : directories) {
-            states.add(dir.split("_")[2].substring(0, 2));
-        }
-        return states;
     }
 
     private static List<String> filterStateDirs(List<String> directories, String state){
@@ -153,7 +149,7 @@ public class TigerProcessor {
         facesDF.createOrReplaceTempView("faces");
         edgesDF.createOrReplaceTempView("edges");
 
-        System.out.println("Join query:\n" + query);
+        logger.info("Join query:\n" + query);
         joinedData = spark.sql(query);
 
         joinedData.show(10);
