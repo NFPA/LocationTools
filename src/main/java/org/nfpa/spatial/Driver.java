@@ -17,6 +17,18 @@ public class Driver {
                 System.out.println("Indexing");
                 new TigerIndexer().main(new String[] {args[1]});
             }
+            case "--search":{
+                System.out.println("Searching");
+                TigerGeocoder tigerGeocoder = new TigerGeocoder();
+                tigerGeocoder.init();
+                tigerGeocoder.setIndexDirectory(args[1]);
+                String queryAddress = args[2];
+                System.out.println(tigerGeocoder.search(queryAddress));
+            }
+            case "--batch":{
+                System.out.println("Batch Geocoding");
+                BatchGeocoder.main(args);
+            }
         }
     }
 }

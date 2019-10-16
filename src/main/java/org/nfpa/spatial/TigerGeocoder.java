@@ -4,7 +4,6 @@ import com.mapzen.jpostal.AddressParser;
 import com.mapzen.jpostal.ParsedComponent;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntRange;
 import org.apache.lucene.index.DirectoryReader;
@@ -25,37 +24,39 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
 import org.locationtech.spatial4j.distance.DistanceUtils;
 import org.locationtech.spatial4j.io.ShapeIO;
 import org.locationtech.spatial4j.io.ShapeReader;
-import org.locationtech.spatial4j.shape.Point;
+//import org.locationtech.spatial4j.shape.Point;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
-public class TigerGeocoder {
+public class TigerGeocoder implements Serializable {
 
     private static SpatialContext ctx;
     private static SpatialStrategy strategy;
     private static Directory directory;
     private static ShapeReader shapeReader;
     private static Interpolator interpolator;
+    private static InterpolationMapper interpolationMapper;
     private static FileSystem hdfs;
     private static AddressParser p;
     private static Map<String, Method> methodMap;
     private static JSONObject abbreviations;
 
 
-    private static final String INDEX_DIRECTORY = "index";
+    private static String INDEX_DIRECTORY;
     private static Configuration hConf;
 
     private static void initGeoStuff() throws IOException {
@@ -65,13 +66,15 @@ public class TigerGeocoder {
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
 
-        interpolator = new Interpolator();
+//        interpolationMapper = new InterpolationMapper();
     }
 
-    private static void init() throws IOException {
+    static void init() throws IOException, org.json.simple.parser.ParseException {
         initGeoStuff();
         initHadoop();
         initLibPostal();
+        getAbbreviations();
+        interpolator = new Interpolator();
     }
 
     private static void initLibPostal() {
@@ -98,9 +101,6 @@ public class TigerGeocoder {
 
     private static void initHadoop(){
         hConf = new Configuration();
-        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/core-site.xml"));
-        hConf.addResource(new Path("/home/hduser/hadoop/etc/hadoop/hdfs-site.xml"));
-
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
         );
@@ -108,7 +108,7 @@ public class TigerGeocoder {
                 org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
     }
-
+    /*
     private void spatialSearch() throws IOException {
         IndexReader indexReader = DirectoryReader.open(this.directory);
         IndexSearcher indexSearcher = new IndexSearcher(indexReader);
@@ -139,7 +139,7 @@ public class TigerGeocoder {
             System.out.println(field.name() + ":" + field.stringValue());
         }
     }
-
+*/
     private static Query addHouseClause(Query q, String houseNumber){
         int hno = Integer.parseInt(houseNumber);
         Query rAddQuery = IntRange.newContainsQuery("RADDRANGE", new int[]{hno}, new int[]{hno});
@@ -236,7 +236,6 @@ public class TigerGeocoder {
         for(ParsedComponent comp: addComp){
             mQuery.addInputField(comp.getLabel(), comp.getValue());
             if (methodMap.containsKey(comp.getLabel())) {
-                System.out.println(comp.getLabel() + " : " + replaceWithAbbrev(comp.getValue()));
                 Object[] parameters = {query, replaceWithAbbrev(comp.getValue())};
                 query = (Query) methodMap.get(comp.getLabel()).invoke(null, parameters);
             }
@@ -258,7 +257,6 @@ public class TigerGeocoder {
                 for (IndexableField field : doc1) {
                     System.out.print(field.name() + ":" + field.stringValue() + "\t");
                 }
-//                System.in.read();
             }
         }
         else {
@@ -266,7 +264,28 @@ public class TigerGeocoder {
         }
     }
 
-    private void search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException {
+    private JSONObject getJSONResults(TopDocs results, IndexSearcher indexSearcher, ModQuery mQuery) throws IOException, ParseException {
+        Document resultDoc;
+        JSONObject resultJSON = new JSONObject();
+        resultJSON.put("TOTAL_HITS", results.totalHits.value);
+
+        if (results.totalHits.value > 0) {
+            resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
+            resultJSON.put("SCORE", results.scoreDocs[0].score);
+            for (IndexableField field : resultDoc) {
+                resultJSON.put(field.name(), field.stringValue());
+            }
+            if(mQuery.containsInputField("house_number")){
+                Point pt = interpolator.getInterpolation(resultDoc, mQuery.get("house_number"));
+                resultJSON.put("INTERPOLATION_LAT", pt.getY());
+                resultJSON.put("INTERPOLATION_LONG", pt.getX());
+            }
+
+        }
+        return resultJSON;
+    }
+
+    JSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException {
 
         directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexReader indexReader = DirectoryReader.open(directory);
@@ -275,8 +294,10 @@ public class TigerGeocoder {
         ModQuery mQuery = makePostalQuery(address);
         Query searchQuery = mQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, 20);
-        printResults(topDocs, indexSearcher, mQuery);
+//        printResults(topDocs, indexSearcher, mQuery);
 //        mapResults(topDocs, indexSearcher, mQuery);
+
+        return getJSONResults(topDocs, indexSearcher, mQuery);
     }
 
     private void mapResults(TopDocs results, IndexSearcher indexSearcher, ModQuery modQuery) throws IOException, org.locationtech.jts.io.ParseException {
@@ -286,25 +307,26 @@ public class TigerGeocoder {
         Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
         int hno = Integer.parseInt(modQuery.get("house_number"));
 
-        interpolator.mapWTKInterpolations(resultDoc, hno);
+        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
-    private void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
+    private static void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
         FileReader reader = new FileReader("./src/main/resources/abbreviations.json");
         JSONParser jsonParser = new JSONParser();
         abbreviations = (JSONObject) jsonParser.parse(reader);
-        System.out.println(abbreviations.toJSONString());
+    }
+
+    void setIndexDirectory(String dir) {
+        INDEX_DIRECTORY = dir;
     }
 
     public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, org.json.simple.parser.ParseException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
         tigerGeocoder.init();
-        tigerGeocoder.getAbbreviations();
-        Scanner scanner = new Scanner(System.in);
-        while(true){
-            System.out.print("\nEnter Address:");
-            tigerGeocoder.search(scanner.nextLine());
-        }
-
+        tigerGeocoder.setIndexDirectory(args[0]);
+        String queryAddress = args[1];
+        tigerGeocoder.search(queryAddress);
     }
+
+
 }

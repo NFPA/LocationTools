@@ -13,6 +13,13 @@ select
 , county.NAME as COUNTY
 , state.STUSPS
 , state.NAME
+, faces.BLKGRPCE10
+, faces.BLKGRPCE
+, faces.BLOCKCE10
+, faces.TRACTCE
+, faces.SUFFIX1CE
+, faces.UACE10
+, faces.ZCTA5CE10
 from edges
 inner join county
 on (edges.COUNTYFP = county.COUNTYFP) and (edges.STATEFP = county.STATEFP)
@@ -23,4 +30,4 @@ on (faces.STATEFP = state.STATEFP)
 inner join place
 on (faces.STATEFP = place.STATEFP and faces.PLACEFP = place.PLACEFP)
 
-group by 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+group by 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21

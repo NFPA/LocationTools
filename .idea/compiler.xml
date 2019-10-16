@@ -9,5 +9,8 @@
         <module name="location-tools" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="spatial-search" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

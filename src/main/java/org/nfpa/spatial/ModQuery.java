@@ -16,6 +16,10 @@ public class ModQuery {
         this.inputFields.put(key, value);
     }
 
+    public boolean containsInputField(String key){
+        return this.inputFields.containsKey(key);
+    }
+
     public String get(String key){
         return this.inputFields.get(key);
     }
