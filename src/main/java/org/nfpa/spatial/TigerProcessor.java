@@ -30,7 +30,7 @@ public class TigerProcessor {
     private static SparkSession spark;
     private static Configuration hConf;
 
-    private static Logger logger = Logger.getLogger(TigerProcessor.class);
+    private static Logger logger = Logger.getLogger("TigerProcessor");
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
@@ -41,8 +41,8 @@ public class TigerProcessor {
         jsc = new JavaSparkContext(spark.sparkContext());
         jsc.setLogLevel("INFO");
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
-        Logger.getLogger("org").setLevel(Level.INFO);
-        Logger.getLogger("akka").setLevel(Level.INFO);
+        Logger.getLogger("org").setLevel(Level.WARN);
+        Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
     private static void initHadoop(){
@@ -101,12 +101,13 @@ public class TigerProcessor {
 
         while (it.hasNext()){
             currentFPath = it.next();
+	    currentCount++;
             try{
                 SpatialRDD tmpRDD = ShapefileReader.readToGeometryRDD(jsc,
                         currentFPath);
                 Dataset tmpDF = Adapter.toDf(tmpRDD, spark);
                 returnDF = returnDF.unionAll(tmpDF);
-                logger.info(state + ": " + currentCount + " of " + totalCount);
+                logger.info(directory + ": " + currentCount + " of " + totalCount);
             } catch (Exception e){
                 logger.info("Error in file: " + currentFPath);
                 logger.info(e.toString());
