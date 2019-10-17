@@ -5,51 +5,52 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class BatchGeocoder {
+
 
     private static JavaSparkContext jsc;
     private static SparkSession spark;
     private static SQLContext sqlContext;
     private static Configuration hConf;
-    TigerGeocoder geocoder;
+    private static TigerGeocoder geocoder;
+    private static Logger logger = Logger.getLogger("BatchGeocoder");
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("TigerProcessor")
-                .setMaster("local[*]");
+                .setAppName("TigerProcessor");
+//                .setMaster("local[*]");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
+
+
+
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
         Logger.getLogger("org").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
+
+
     }
 
-    private void registerGeoUDF(String indexDir) throws IOException, ParseException {
+    private void registerGeocoderUDF(String indexDir) throws IOException, ParseException {
         geocoder = new TigerGeocoder();
         geocoder.init();
         geocoder.setIndexDirectory(indexDir);
 
+        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(geocoder);
+
         sqlContext = new SQLContext(jsc);
-        sqlContext.udf().register("FN_GEOCODE", (String address) -> geocoder.search(address).size()
-                , DataTypes.IntegerType);
+        sqlContext.udf().register("FN_GEOCODE", (String address) -> geocodeWrapper.search(address)
+                , DataTypes.StringType);
     }
 
     private void initHadoop(){
@@ -62,28 +63,45 @@ public class BatchGeocoder {
         );
     }
 
-    private void callBG(String csvPath){
+    private void batchGeocode(String csvPath, String outputPath){
         Dataset<Row> dataFrame = spark.read().format("csv")
                 .option("sep", ",")
-                .option("inferSchema", "true")
-                .option("header", "true")
+                .option("inferSchema", true)
+                .option("quote", "\u0000")
+                .option("header", true)
                 .load(csvPath);
         dataFrame.show(20);
         dataFrame.createOrReplaceTempView("address_data");
-        spark.sql("select FN_GEOCODE(address) from address_data").show();
 
+        String query = "select *, FN_GEOCODE(address) as geocoded_address from address_data";
+
+        logger.info("Executing: " + query);
+
+        Dataset resultDF = spark.sql(query);
+
+        logger.info("Writing results to disk");
+        resultDF.write()
+                .option("header", true)
+                .option("delimiter", "\t")
+                .option("quote", "\u0000")
+                .csv(outputPath + "geocoded/");
+
+        logger.info("Successfully written to disk");
     }
 
     public static void main(String[] args) throws IOException, ParseException {
 
+        String inputCSVPath = args[0];
+        String indexPath = args[1];
+        String outputPath = args[2];
+
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.registerGeoUDF("index");
-        bg.callBG("address_sample.txt");
+        bg.registerGeocoderUDF(indexPath);
+
+        bg.batchGeocode(inputCSVPath, outputPath);
 
         jsc.stop();
     }
-
-
 }

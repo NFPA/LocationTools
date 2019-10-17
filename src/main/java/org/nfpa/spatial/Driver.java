@@ -30,7 +30,7 @@ public class Driver {
             break;
             case "--batch":{
                 System.out.println("Batch Geocoding");
-                BatchGeocoder.main(args);
+                BatchGeocoder.main(new String[]{args[1], args[2], args[3]});
             }
             break;
         }
