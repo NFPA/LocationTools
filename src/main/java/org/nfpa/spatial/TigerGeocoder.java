@@ -2,6 +2,7 @@ package org.nfpa.spatial;
 
 import com.mapzen.jpostal.AddressParser;
 import com.mapzen.jpostal.ParsedComponent;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.lucene.document.Document;
@@ -33,9 +34,7 @@ import org.locationtech.spatial4j.io.ShapeIO;
 import org.locationtech.spatial4j.io.ShapeReader;
 //import org.locationtech.spatial4j.shape.Point;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Paths;
@@ -73,12 +72,12 @@ public class TigerGeocoder implements Serializable {
         initGeoStuff();
         initHadoop();
         initLibPostal();
-        getAbbreviations();
         interpolator = new Interpolator();
     }
 
     private static void initLibPostal() {
         System.out.println("Jpostal shared library: " + System.getProperty("java.library.path"));
+
         p = AddressParser.getInstance();
         methodMap = new HashMap<String, Method>();
 
@@ -310,10 +309,10 @@ public class TigerGeocoder implements Serializable {
         interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
-    private static void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
-        FileReader reader = new FileReader("./src/main/resources/abbreviations.json");
+    void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
         JSONParser jsonParser = new JSONParser();
-        abbreviations = (JSONObject) jsonParser.parse(reader);
+        abbreviations = (JSONObject) jsonParser.parse(IOUtils.toString(in));
     }
 
     void setIndexDirectory(String dir) {
@@ -323,10 +322,9 @@ public class TigerGeocoder implements Serializable {
     public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, org.json.simple.parser.ParseException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
         tigerGeocoder.init();
+        tigerGeocoder.getAbbreviations();
         tigerGeocoder.setIndexDirectory(args[0]);
         String queryAddress = args[1];
         tigerGeocoder.search(queryAddress);
     }
-
-
 }
