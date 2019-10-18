@@ -1,5 +1,6 @@
 package org.nfpa.spatial;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -12,6 +13,11 @@ import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class BatchGeocoder {
 
@@ -25,8 +31,8 @@ public class BatchGeocoder {
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("TigerProcessor");
-//                .setMaster("local[*]");
+                .setAppName("TigerProcessor")
+                .setMaster("local[*]");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
@@ -44,13 +50,16 @@ public class BatchGeocoder {
     private void registerGeocoderUDF(String indexDir) throws IOException, ParseException {
         geocoder = new TigerGeocoder();
         geocoder.init();
+        geocoder.getAbbreviations();
         geocoder.setIndexDirectory(indexDir);
 
         GeocodeWrapper geocodeWrapper = new GeocodeWrapper(geocoder);
 
         sqlContext = new SQLContext(jsc);
-        sqlContext.udf().register("FN_GEOCODE", (String address) -> geocodeWrapper.search(address)
-                , DataTypes.StringType);
+        sqlContext.udf().register(
+                "FN_GEOCODE",
+                (String address) -> geocodeWrapper.search(address),
+                DataTypes.StringType);
     }
 
     private void initHadoop(){
@@ -63,7 +72,12 @@ public class BatchGeocoder {
         );
     }
 
-    private void batchGeocode(String csvPath, String outputPath){
+    private String readResource(String resName)  throws IOException {
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(resName);
+        return IOUtils.toString(in);
+    }
+
+    private void batchGeocode(String csvPath, String outputPath) throws IOException {
         Dataset<Row> dataFrame = spark.read().format("csv")
                 .option("sep", ",")
                 .option("inferSchema", true)
@@ -73,19 +87,19 @@ public class BatchGeocoder {
         dataFrame.show(20);
         dataFrame.createOrReplaceTempView("address_data");
 
-        String query = "select *, FN_GEOCODE(address) as geocoded_address from address_data";
+        String query = readResource("geocode.sql");
 
         logger.info("Executing: " + query);
 
         Dataset resultDF = spark.sql(query);
 
         logger.info("Writing results to disk");
+        resultDF.show(20);
         resultDF.write()
                 .option("header", true)
                 .option("delimiter", "\t")
                 .option("quote", "\u0000")
-                .csv(outputPath + "geocoded/");
-
+                .csv(outputPath + "output/");
         logger.info("Successfully written to disk");
     }
 
