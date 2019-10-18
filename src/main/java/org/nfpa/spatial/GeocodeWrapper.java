@@ -19,16 +19,4 @@ public class GeocodeWrapper implements Serializable {
         result =  tigerGeocoder.search(address).toJSONString();
         return result;
     }
-
-//    private void writeObject(ObjectOutputStream os)
-//            throws IOException {
-//        os.writeUTF(result);
-//
-//    }
-//
-//    private void readObject(ObjectInputStream is)
-//            throws IOException, ClassNotFoundException, IllegalAccessException, ParseException, InvocationTargetException {
-//        String address = is.readUTF();
-//        result = tigerGeocoder.search(address).toJSONString();
-//    }
 }
