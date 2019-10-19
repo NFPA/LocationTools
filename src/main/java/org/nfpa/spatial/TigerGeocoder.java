@@ -140,7 +140,12 @@ public class TigerGeocoder implements Serializable {
     }
 */
     private static Query addHouseClause(Query q, String houseNumber){
-        int hno = Integer.parseInt(houseNumber);
+        int hno;
+        try {
+            hno = Integer.parseInt(houseNumber);
+        }catch (NumberFormatException nfe){
+            return q;
+        }
         Query rAddQuery = IntRange.newContainsQuery("RADDRANGE", new int[]{hno}, new int[]{hno});
         Query lAddQuery = IntRange.newContainsQuery("LADDRANGE", new int[]{hno}, new int[]{hno});
         BooleanQuery.Builder hnoQueryBuilder = new BooleanQuery.Builder();
