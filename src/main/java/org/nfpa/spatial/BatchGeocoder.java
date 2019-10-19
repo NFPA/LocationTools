@@ -79,7 +79,7 @@ public class BatchGeocoder {
 
     private void batchGeocode(String csvPath, String outputPath) throws IOException {
         Dataset<Row> dataFrame = spark.read().format("csv")
-                .option("sep", ",")
+                .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
                 .option("header", true)
