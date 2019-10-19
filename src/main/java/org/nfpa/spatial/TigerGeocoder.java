@@ -5,6 +5,7 @@ import com.mapzen.jpostal.ParsedComponent;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.IntRange;
 import org.apache.lucene.index.DirectoryReader;
@@ -53,6 +54,7 @@ public class TigerGeocoder implements Serializable {
     private static AddressParser p;
     private static Map<String, Method> methodMap;
     private static JSONObject abbreviations;
+    private static Logger logger = Logger.getLogger("TigerGeocoder");
 
 
     private static String INDEX_DIRECTORY;
@@ -280,11 +282,15 @@ public class TigerGeocoder implements Serializable {
                 resultJSON.put(field.name(), field.stringValue());
             }
             if(mQuery.containsInputField("house_number")){
-                Point pt = interpolator.getInterpolation(resultDoc, mQuery.get("house_number"));
-                resultJSON.put("INTERPOLATION_LAT", pt.getY());
-                resultJSON.put("INTERPOLATION_LONG", pt.getX());
+                try{
+                    Integer.parseInt(mQuery.get("house_number"));
+                    Point pt = interpolator.getInterpolation(resultDoc, mQuery.get("house_number"));
+                    resultJSON.put("INTERPOLATION_LAT", pt.getY());
+                    resultJSON.put("INTERPOLATION_LONG", pt.getX());
+                }catch(NumberFormatException nfe){
+                    logger.info("Bad house number");
+                }
             }
-
         }
         return resultJSON;
     }
