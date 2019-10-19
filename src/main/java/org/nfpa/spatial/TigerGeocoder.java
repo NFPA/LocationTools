@@ -59,6 +59,8 @@ public class TigerGeocoder implements Serializable {
 
     private static String INDEX_DIRECTORY;
     private static Configuration hConf;
+    private static IndexSearcher indexSearcher;
+
 
     private static void initGeoStuff() throws IOException {
         ctx = JtsSpatialContext.GEO;
@@ -70,11 +72,17 @@ public class TigerGeocoder implements Serializable {
 //        interpolationMapper = new InterpolationMapper();
     }
 
-    static void init() throws IOException, org.json.simple.parser.ParseException {
+    void init() throws IOException, org.json.simple.parser.ParseException {
         initGeoStuff();
         initHadoop();
         initLibPostal();
+        initLucene();
         interpolator = new Interpolator();
+    }
+    private static void initLucene() throws IOException {
+        directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
+        IndexReader indexReader = DirectoryReader.open(directory);
+        indexSearcher = new IndexSearcher(indexReader);
     }
 
     private static void initLibPostal() {
@@ -297,10 +305,6 @@ public class TigerGeocoder implements Serializable {
 
     JSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException {
 
-        directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
-        IndexReader indexReader = DirectoryReader.open(directory);
-        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
-
         ModQuery mQuery = makePostalQuery(address);
         Query searchQuery = mQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, 20);
@@ -332,9 +336,9 @@ public class TigerGeocoder implements Serializable {
 
     public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, org.json.simple.parser.ParseException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
+        tigerGeocoder.setIndexDirectory(args[0]);
         tigerGeocoder.init();
         tigerGeocoder.getAbbreviations();
-        tigerGeocoder.setIndexDirectory(args[0]);
         String queryAddress = args[1];
         tigerGeocoder.search(queryAddress);
     }

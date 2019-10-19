@@ -49,10 +49,10 @@ public class BatchGeocoder {
 
     private void registerGeocoderUDF(String indexDir) throws IOException, ParseException {
         geocoder = new TigerGeocoder();
+        geocoder.setIndexDirectory(indexDir);
         geocoder.init();
         geocoder.getAbbreviations();
-        geocoder.setIndexDirectory(indexDir);
-
+        
         GeocodeWrapper geocodeWrapper = new GeocodeWrapper(geocoder);
 
         sqlContext = new SQLContext(jsc);
