@@ -45,13 +45,9 @@ public class TigerIndexer {
 
     protected void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
-
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
-
         int maxLevels = 5; //precision for geohash
-
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
-
         this.strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
     }
 
@@ -65,22 +61,20 @@ public class TigerIndexer {
         );
     }
 
-    protected void initIndexer() throws IOException{
-
+    private void initIndexer() throws IOException{
         this.directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
-
         IndexWriterConfig iwConfig = new IndexWriterConfig(new StandardAnalyzer());
         iwConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         indexWriter = new IndexWriter(directory, iwConfig);
         indexWriter.commit();
     }
 
-    protected void finishIndexer() throws IOException {
+    private void finishIndexer() throws IOException {
         indexWriter.commit();
         indexWriter.close();
     }
 
-    public static int parseToInt(String stringToParse, int defaultValue) {
+    static int parseToInt(String stringToParse, int defaultValue) {
         int ret;
         try
         {
@@ -149,7 +143,7 @@ public class TigerIndexer {
             }
             else {
                 if (record.get(name) != null){
-                    doc.add(new TextField(name, record.get(name).toString(), Field.Store.YES));
+                    doc.add(new TextField(name, record.get(name), Field.Store.YES));
                 }
             }
         }

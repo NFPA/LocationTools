@@ -169,6 +169,8 @@ public class TigerProcessor {
                     .option("delimiter", "\t")
                     .option("quote", "\u0000")
                     .csv(TIGER_BASE + "processed/" + state);
+            spark.stop();
+            spark.close();
             jsc.stop();
             System.gc();
         }
