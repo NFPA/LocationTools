@@ -1,46 +1,30 @@
 package org.nfpa.spatial;
 
-import com.mapzen.jpostal.AddressParser;
-import com.mapzen.jpostal.ParsedComponent;
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.IntRange;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
-import org.apache.lucene.search.spans.SpanMultiTermQueryWrapper;
-import org.apache.lucene.search.spans.SpanNearQuery;
-import org.apache.lucene.search.spans.SpanQuery;
 import org.apache.lucene.spatial.SpatialStrategy;
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
-import org.apache.lucene.spatial.query.SpatialArgs;
-import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
-import org.locationtech.spatial4j.distance.DistanceUtils;
 import org.locationtech.spatial4j.io.ShapeIO;
 import org.locationtech.spatial4j.io.ShapeReader;
-//import org.locationtech.spatial4j.shape.Point;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TigerGeocoder implements Serializable {
 
@@ -49,12 +33,13 @@ public class TigerGeocoder implements Serializable {
     private static Directory directory;
     private static ShapeReader shapeReader;
     private static Interpolator interpolator;
+    private static PostalQuery postalQuery;
     private static InterpolationMapper interpolationMapper;
     private static FileSystem hdfs;
-    private static AddressParser p;
-    private static Map<String, Method> methodMap;
-    private static JSONObject abbreviations;
-    private static Logger logger = Logger.getLogger("TigerGeocoder");
+
+    private static final String IP_HOUSE_FIELD = "ip_house_number";
+
+    private static Logger logger = Logger.getLogger(TigerGeocoder.class);
 
 
     private static String INDEX_DIRECTORY;
@@ -62,7 +47,7 @@ public class TigerGeocoder implements Serializable {
     private static IndexSearcher indexSearcher;
 
 
-    private static void initGeoStuff() throws IOException {
+    private void initGeoStuff() throws IOException {
         ctx = JtsSpatialContext.GEO;
         shapeReader = ctx.getFormats().getReader(ShapeIO.WKT);
         int maxLevels = 5; //precision for geohash
@@ -73,42 +58,20 @@ public class TigerGeocoder implements Serializable {
     }
 
     void init() throws IOException, org.json.simple.parser.ParseException {
-        initGeoStuff();
-        initHadoop();
-        initLibPostal();
-        initLucene();
+        this.initGeoStuff();
+        this.initHadoop();
+        this.initLucene();
+        postalQuery = new PostalQuery();
         interpolator = new Interpolator();
     }
-    private static void initLucene() throws IOException {
+
+    private void initLucene() throws IOException {
         directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexReader indexReader = DirectoryReader.open(directory);
         indexSearcher = new IndexSearcher(indexReader);
     }
 
-    private static void initLibPostal() {
-        System.out.println("Jpostal shared library: " + System.getProperty("java.library.path"));
-
-        p = AddressParser.getInstance();
-        methodMap = new HashMap<String, Method>();
-
-        HashMap<String, String> libPostalMap = new HashMap<>();
-        libPostalMap.put("house_number", "addHouseClause");
-        libPostalMap.put("road", "addStreetClause");
-        libPostalMap.put("city", "addCityClause");
-        libPostalMap.put("postcode", "addZipClause");
-        libPostalMap.put("state", "addStateClause");
-
-        libPostalMap.forEach((k, v) -> {
-            try {
-                methodMap.put(k, TigerGeocoder.class.getDeclaredMethod(v, Query.class, String.class));
-            } catch (NoSuchMethodException e) {
-                e.printStackTrace();
-            }
-        });
-
-    }
-
-    private static void initHadoop(){
+    private void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -117,171 +80,46 @@ public class TigerGeocoder implements Serializable {
                 org.apache.hadoop.fs.LocalFileSystem.class.getName()
         );
     }
-    /*
-    private void spatialSearch() throws IOException {
-        IndexReader indexReader = DirectoryReader.open(this.directory);
-        IndexSearcher indexSearcher = new IndexSearcher(indexReader);
 
-        Point pt;
-
-//        pt = ctx.makePoint(- 70.558924, 41.598509); //MASS
-        pt = ctx.makePoint(- 78.764386, 39.680944); //MARYLAND
-
-        System.out.println("Searching: " + pt);
-        DoubleValuesSource valueSource = strategy.makeDistanceValueSource(pt, DistanceUtils.DEG_TO_KM);
-        Sort distSort = new Sort(valueSource.getSortField(false)).rewrite(indexSearcher);
-
-
-        SpatialArgs args = new SpatialArgs(
-                SpatialOperation.Intersects,
-                ctx.makeCircle(pt, DistanceUtils.dist2Degrees(0.05, DistanceUtils.EARTH_MEAN_RADIUS_KM))
-        );
-
-        Query query = this.strategy.makeQuery(args);
-        TopDocs docs = indexSearcher.search(query, 10, distSort);
-
-        System.out.println(docs.totalHits);
-
-        Document doc1 = indexSearcher.doc(docs.scoreDocs[0].doc);
-
-        for (IndexableField field : doc1){
-            System.out.println(field.name() + ":" + field.stringValue());
-        }
-    }
-*/
-    private static Query addHouseClause(Query q, String houseNumber){
-        int hno;
-        try {
-            hno = Integer.parseInt(houseNumber);
-        }catch (NumberFormatException nfe){
-            return q;
-        }
-        Query rAddQuery = IntRange.newContainsQuery("RADDRANGE", new int[]{hno}, new int[]{hno});
-        Query lAddQuery = IntRange.newContainsQuery("LADDRANGE", new int[]{hno}, new int[]{hno});
-        BooleanQuery.Builder hnoQueryBuilder = new BooleanQuery.Builder();
-
-        hnoQueryBuilder.add(q, BooleanClause.Occur.MUST);
-        hnoQueryBuilder.add(rAddQuery, BooleanClause.Occur.SHOULD);
-        hnoQueryBuilder.add(lAddQuery, BooleanClause.Occur.SHOULD);
-        return hnoQueryBuilder.build();
+    void setIndexDirectory(String dir) {
+        INDEX_DIRECTORY = dir;
     }
 
-    private static Query addStreetClause(Query q, String street){
-        BooleanQuery.Builder streetQueryBuilder = new BooleanQuery.Builder();
-        streetQueryBuilder.add(q, BooleanClause.Occur.MUST);
-
-        String[] elems = street.split("\\s+");
-        if (elems.length > 1){
-            SpanQuery[] clauses = new SpanQuery[elems.length];
-            for (int i=0; i<clauses.length; i++){
-                clauses[i] = new SpanMultiTermQueryWrapper(new FuzzyQuery(new Term("FULLNAME", elems[i]), 2));
-            }
-            SpanNearQuery query = new SpanNearQuery(clauses, 0
-                    , true);
-            streetQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-            return streetQueryBuilder.build();
-        } else {
-            streetQueryBuilder.add(new FuzzyQuery(new Term("FULLNAME", street), 2), BooleanClause.Occur.SHOULD);
-            return streetQueryBuilder.build();
-        }
-    }
-
-    private static Query addCityClause(Query q, String city){
-        BooleanQuery.Builder cityQueryBuilder = new BooleanQuery.Builder();
-        cityQueryBuilder.add(q, BooleanClause.Occur.MUST);
-
-        String[] elems = city.split("\\s+");
-        if (elems.length > 1){
-            SpanQuery[] clauses = new SpanQuery[elems.length];
-            for (int i=0; i<clauses.length; i++){
-                clauses[i] = new SpanMultiTermQueryWrapper(new FuzzyQuery(new Term("PLACE", elems[i]), 2));
-            }
-            SpanNearQuery query = new SpanNearQuery(clauses, 0
-                    , true);
-            cityQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-            return cityQueryBuilder.build();
-        } else {
-            cityQueryBuilder.add(new FuzzyQuery(new Term("PLACE", city), 2), BooleanClause.Occur.MUST);
-            return cityQueryBuilder.build();
-        }
-    }
-
-    private static Query addZipClause(Query q, String zip){
-        Query ziplQuery = new TermQuery(new Term("ZIPL", zip));
-        Query ziprQuery = new TermQuery(new Term("ZIPR", zip));
-        BooleanQuery.Builder zipQueryBuilder = new BooleanQuery.Builder();
-
-        zipQueryBuilder.add(q, BooleanClause.Occur.MUST);
-        zipQueryBuilder.add(ziplQuery, BooleanClause.Occur.SHOULD);
-        zipQueryBuilder.add(ziprQuery, BooleanClause.Occur.SHOULD);
-        return zipQueryBuilder.build();
-    }
-
-    private static Query addStateClause(Query q, String state){
-        Query stuspsQuery = new TermQuery(new Term("STUSPS", state));
-        Query stNameQuery = new TermQuery(new Term("NAME", state));
-        BooleanQuery.Builder stateQueryBuilder = new BooleanQuery.Builder();
-
-        stateQueryBuilder.add(q, BooleanClause.Occur.MUST);
-        stateQueryBuilder.add(stuspsQuery, BooleanClause.Occur.SHOULD);
-        stateQueryBuilder.add(stNameQuery, BooleanClause.Occur.SHOULD);
-        return stateQueryBuilder.build();
-    }
-
-    private static String replaceWithAbbrev(String comp){
-        String[] elems = comp.split("\\s+");
-        String replacement;
-        for (int i=0 ; i < elems.length; i++){
-            replacement = (String) abbreviations.get(elems[i]);
-            if (replacement != null){
-                elems[i] = replacement;
-            }
-        }
-        return String.join(" ", elems);
-    }
-
-    private static ModQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
-
-        ParsedComponent[] addComp = p.parseAddress(address);
-        Query query = new MatchAllDocsQuery();
-
-        ModQuery mQuery = new ModQuery();
-
-        for(ParsedComponent comp: addComp){
-            mQuery.addInputField(comp.getLabel(), comp.getValue());
-            if (methodMap.containsKey(comp.getLabel())) {
-                Object[] parameters = {query, replaceWithAbbrev(comp.getValue())};
-                query = (Query) methodMap.get(comp.getLabel()).invoke(null, parameters);
-            }
-        }
-        mQuery.setQuery(query);
-        return mQuery;
-    }
-
-    private void printResults(TopDocs results, IndexSearcher indexSearcher, ModQuery mQuery) throws IOException {
+    private void printResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException {
         Document doc1;
-        System.out.println(results.totalHits.value);
+        logger.info(results.totalHits.value);
 
         if (results.totalHits.value > 0) {
             for (int i=0; i < 3 && i < results.scoreDocs.length; i++){
-                System.out.println("Result: " + i);
+                logger.info("Result: " + i);
 
                 doc1 = indexSearcher.doc(results.scoreDocs[i].doc);
-                System.out.println("Score: " + results.scoreDocs[i].score);
+                logger.info("Score: " + results.scoreDocs[i].score);
                 for (IndexableField field : doc1) {
                     System.out.print(field.name() + ":" + field.stringValue() + "\t");
                 }
             }
         }
         else {
-            System.out.println("No results");
+            logger.info("No results");
         }
     }
 
-    private JSONObject getJSONResults(TopDocs results, IndexSearcher indexSearcher, ModQuery mQuery) throws IOException, ParseException {
+    private void mapResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, org.locationtech.jts.io.ParseException {
+
+        if (results.totalHits.value < 1) return;
+
+        Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
+        int hno = Integer.parseInt(compositeQuery.get("ip_house_number"));
+
+        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
+    }
+
+    private JSONObject getJSONResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException {
         Document resultDoc;
         JSONObject resultJSON = new JSONObject();
         resultJSON.put("TOTAL_HITS", results.totalHits.value);
+        resultJSON.putAll(compositeQuery.getHashMap());
 
         if (results.totalHits.value > 0) {
             resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
@@ -289,12 +127,16 @@ public class TigerGeocoder implements Serializable {
             for (IndexableField field : resultDoc) {
                 resultJSON.put(field.name(), field.stringValue());
             }
-            if(mQuery.containsInputField("house_number")){
+            if(compositeQuery.containsInputField(IP_HOUSE_FIELD)){
                 try{
-                    Integer.parseInt(mQuery.get("house_number"));
-                    Point pt = interpolator.getInterpolation(resultDoc, mQuery.get("house_number"));
-                    resultJSON.put("INTERPOLATION_LAT", pt.getY());
-                    resultJSON.put("INTERPOLATION_LONG", pt.getX());
+                    Integer.parseInt(compositeQuery.get(IP_HOUSE_FIELD));
+                    Point pt = interpolator.getInterpolation(
+                            resultDoc,
+                            compositeQuery.get(IP_HOUSE_FIELD),
+                            "GEOMETRY"
+                    );
+                    resultJSON.put("LINT_LAT", pt.getY());
+                    resultJSON.put("LINT_LONG", pt.getX());
                 }catch(NumberFormatException nfe){
                     logger.info("Bad house number");
                 }
@@ -305,41 +147,21 @@ public class TigerGeocoder implements Serializable {
 
     JSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException {
 
-        ModQuery mQuery = makePostalQuery(address);
-        Query searchQuery = mQuery.getQuery();
+        CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
+        Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, 20);
-//        printResults(topDocs, indexSearcher, mQuery);
-//        mapResults(topDocs, indexSearcher, mQuery);
 
-        return getJSONResults(topDocs, indexSearcher, mQuery);
+
+        return getJSONResults(topDocs, indexSearcher, compositeQuery);
     }
 
-    private void mapResults(TopDocs results, IndexSearcher indexSearcher, ModQuery modQuery) throws IOException, org.locationtech.jts.io.ParseException {
 
-        if (results.totalHits.value < 1) return;
-
-        Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
-        int hno = Integer.parseInt(modQuery.get("house_number"));
-
-        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
-    }
-
-    void getAbbreviations() throws IOException, org.json.simple.parser.ParseException {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
-        JSONParser jsonParser = new JSONParser();
-        abbreviations = (JSONObject) jsonParser.parse(IOUtils.toString(in));
-    }
-
-    void setIndexDirectory(String dir) {
-        INDEX_DIRECTORY = dir;
-    }
 
     public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, org.json.simple.parser.ParseException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
         tigerGeocoder.setIndexDirectory(args[0]);
         tigerGeocoder.init();
-        tigerGeocoder.getAbbreviations();
         String queryAddress = args[1];
-        tigerGeocoder.search(queryAddress);
+        logger.info(tigerGeocoder.search(queryAddress).toJSONString());
     }
 }

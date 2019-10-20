@@ -34,13 +34,8 @@ import static org.nfpa.spatial.TigerIndexer.parseToInt;
 public class Interpolator {
     private static WKTReader wktReader;
     private static GeometryFactory gFactory;
-    private static MapContent map;
-    private static SimpleFeatureType EDGE_TYPE, POINT_TYPE;
-    private static DefaultFeatureCollection lineCollection, pointCollection;
-    private static Style lineStyle, pointStyle;
-    private static int counter = 0;
 
-    public Interpolator() throws IOException {
+    public Interpolator(){
         wktReader = new WKTReader();
         gFactory = new GeometryFactory();
     }
@@ -60,9 +55,9 @@ public class Interpolator {
         return new int[] {fromAdd[0], toAdd[toAdd.length -1]};
     }
 
-    public Point getInterpolation(Document doc, String house_number) throws ParseException, IOException {
+    public Point getInterpolation(Document doc, String house_number, String geometryField) throws ParseException {
 
-        String wktString = doc.get("GEOMETRY");
+        String wktString = doc.get(geometryField);
         int[] addRange = getAddressRange(doc);
         int hNo = Integer.parseInt(house_number);
 
@@ -77,10 +72,3 @@ public class Interpolator {
         return interpolatedPoint;
     }
 }
-
-
-//120 Abrams hill rd duxbury ma 02332
-//250 Crooked Lane duxbury ma 02332
-
-//45 John St Worcester MA 01609
-//220 Green Hill Parkway Worcester ma 01605

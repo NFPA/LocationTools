@@ -3,32 +3,38 @@ package org.nfpa.spatial;
 import org.apache.lucene.search.Query;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-public class ModQuery {
+public class CompositeQuery {
     private Query query;
     private HashMap<String, String> inputFields;
 
-    public ModQuery(){
+    CompositeQuery(){
         this.inputFields  = new HashMap();
     }
 
-    public void addInputField(String key, String value){
+    Map<String, String> getHashMap(){
+        return this.inputFields;
+    }
+
+    void addInputField(String key, String value){
         this.inputFields.put(key, value);
     }
 
-    public boolean containsInputField(String key){
+    boolean containsInputField(String key){
         return this.inputFields.containsKey(key);
     }
 
-    public String get(String key){
+    String get(String key){
         return this.inputFields.get(key);
     }
 
-    public void setQuery(Query query){
+    void setQuery(Query query){
         this.query = query;
     }
 
-    public Query getQuery(){
+    Query getQuery(){
         return this.query;
     }
 

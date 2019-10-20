@@ -43,15 +43,12 @@ public class BatchGeocoder {
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
         Logger.getLogger("org").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
-
-
     }
 
     private void registerGeocoderUDF(String indexDir) throws IOException, ParseException {
         geocoder = new TigerGeocoder();
         geocoder.setIndexDirectory(indexDir);
         geocoder.init();
-        geocoder.getAbbreviations();
         
         GeocodeWrapper geocodeWrapper = new GeocodeWrapper(geocoder);
 
@@ -93,7 +90,7 @@ public class BatchGeocoder {
 
         Dataset resultDF = spark.sql(query);
 
-        logger.info("Writing results to disk");
+        logger.info("Writing results to disk ...");
         resultDF.show(20);
         resultDF.write()
                 .option("header", true)
