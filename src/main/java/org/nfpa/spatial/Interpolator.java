@@ -55,11 +55,10 @@ public class Interpolator {
         return new int[] {fromAdd[0], toAdd[toAdd.length -1]};
     }
 
-    public Point getInterpolation(Document doc, String house_number, String geometryField) throws ParseException {
+    public Point getInterpolation(Document doc, int hNo, String geometryField) throws ParseException {
 
         String wktString = doc.get(geometryField);
         int[] addRange = getAddressRange(doc);
-        int hNo = Integer.parseInt(house_number);
 
         LineString lString = (LineString) wktReader.read(wktString);
         LengthIndexedLine lenIdxLine = new LengthIndexedLine(lString);
