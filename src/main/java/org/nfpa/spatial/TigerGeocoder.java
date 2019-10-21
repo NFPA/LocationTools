@@ -122,7 +122,10 @@ public class TigerGeocoder implements Serializable {
         OrderedJSONObject resultJSON;
         JSONArray results = new JSONArray();
 
-        for (int i = 0; i < topDocs.totalHits.value & i < 3; i++) {
+        if(topDocs.totalHits.value == 0) return results;
+        logger.info(topDocs.totalHits.value);
+
+        for (int i = 0; i < topDocs.scoreDocs.length; i++) {
             doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
             resultJSON = getJSONFromDoc(doc, compositeQuery);
             resultJSON.put("SCORE", topDocs.scoreDocs[i].score);
@@ -155,24 +158,21 @@ public class TigerGeocoder implements Serializable {
         return resultJSON;
     }
 
-
-
-    JSONArray search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
+    JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
 
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
-        TopDocs topDocs = indexSearcher.search(searchQuery, 20);
+        TopDocs topDocs = indexSearcher.search(searchQuery, numRes);
 
         return getResult(topDocs, indexSearcher, compositeQuery);
     }
-
-
 
     public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
         tigerGeocoder.setIndexDirectory(args[0]);
         tigerGeocoder.init();
         String queryAddress = args[1];
-        logger.info(tigerGeocoder.search(queryAddress));
+        int numRes = Integer.parseInt(args[2]);
+        logger.info(tigerGeocoder.search(queryAddress, numRes));
     }
 }
