@@ -122,7 +122,6 @@ public class TigerGeocoder implements Serializable {
         JSONArray results = new JSONArray();
 
         if(topDocs.totalHits.value == 0) return results;
-        logger.info(topDocs.totalHits.value);
 
         for (int i = 0; i < topDocs.scoreDocs.length; i++) {
             doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
