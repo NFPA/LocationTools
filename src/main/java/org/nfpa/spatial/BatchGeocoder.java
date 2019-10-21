@@ -80,6 +80,7 @@ public class BatchGeocoder {
         logger.info("Executing: " + query);
 
         Dataset resultDF = spark.sql(query);
+        resultDF.createOrReplaceTempView("result");
 
         logger.info("Writing results to disk ...");
         resultDF.show(20);
@@ -89,6 +90,8 @@ public class BatchGeocoder {
                 .option("escape", "\"")
                 .option("quote", "\"")
                 .csv(outputPath + "output/");
+        sqlContext.sql("create table temp.mytable as select * from result");
+
         logger.info("Successfully written to disk");
 
         jsc.stop();
