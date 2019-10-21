@@ -24,7 +24,7 @@ public class Driver {
             break;
             case "--search":{
                 logger.info("Searching.");
-                TigerGeocoder.main(new String[]{params[1], params[2]});
+                TigerGeocoder.main(new String[]{params[1], params[2], params[3]});
             }
             break;
             case "--batch":{

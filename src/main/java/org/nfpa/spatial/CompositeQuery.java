@@ -15,7 +15,7 @@ public class CompositeQuery {
         this.inputFields  = new LinkedHashMap<>();
     }
 
-    LinkedHashMap<String, String> getHashMap(){
+    HashMap<String, String> getHashMap(){
         return this.inputFields;
     }
 
