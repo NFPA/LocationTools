@@ -86,7 +86,8 @@ public class BatchGeocoder {
         resultDF.write()
                 .option("header", true)
                 .option("delimiter", "\t")
-                .option("quote", "\u0000")
+                .option("escape", "\"")
+                .option("quote", "\"")
                 .csv(outputPath + "output/");
         logger.info("Successfully written to disk");
 
