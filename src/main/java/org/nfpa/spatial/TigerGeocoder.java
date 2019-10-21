@@ -89,7 +89,6 @@ public class TigerGeocoder implements Serializable {
 
     private void printResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException {
         Document doc1;
-        logger.info(results.totalHits.value);
 
         if (results.totalHits.value > 0) {
             for (int i=0; i < 3 && i < results.scoreDocs.length; i++){
