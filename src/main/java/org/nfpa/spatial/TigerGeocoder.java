@@ -14,7 +14,8 @@ import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.json.simple.JSONObject;
+import org.apache.wink.json4j.JSONException;
+import org.apache.wink.json4j.OrderedJSONObject;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.spatial4j.context.SpatialContext;
@@ -37,7 +38,7 @@ public class TigerGeocoder implements Serializable {
     private static InterpolationMapper interpolationMapper;
     private static FileSystem hdfs;
 
-    private static final String IP_HOUSE_FIELD = "ip_house_number";
+    private static final String IP_HOUSE_FIELD = "ip_postal_house_number";
 
     private static Logger logger = Logger.getLogger(TigerGeocoder.class);
 
@@ -57,7 +58,7 @@ public class TigerGeocoder implements Serializable {
 //        interpolationMapper = new InterpolationMapper();
     }
 
-    void init() throws IOException, org.json.simple.parser.ParseException {
+    void init() throws IOException {
         this.initGeoStuff();
         this.initHadoop();
         this.initLucene();
@@ -115,10 +116,9 @@ public class TigerGeocoder implements Serializable {
         interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
-    private JSONObject getJSONResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException {
+    private OrderedJSONObject getResult(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
         Document resultDoc;
-        JSONObject resultJSON = new JSONObject();
-        resultJSON.put("TOTAL_HITS", results.totalHits.value);
+        OrderedJSONObject resultJSON = new OrderedJSONObject();
         resultJSON.putAll(compositeQuery.getHashMap());
 
         if (results.totalHits.value > 0) {
@@ -137,31 +137,33 @@ public class TigerGeocoder implements Serializable {
                     );
                     resultJSON.put("LINT_LAT", pt.getY());
                     resultJSON.put("LINT_LONG", pt.getX());
-                }catch(NumberFormatException nfe){
+                } catch(NumberFormatException nfe){
                     logger.info("Bad house number");
                 }
             }
         }
-        return resultJSON;
+
+        return new OrderedJSONObject(resultJSON);
     }
 
-    JSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException {
+
+
+    OrderedJSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
 
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, 20);
 
-
-        return getJSONResults(topDocs, indexSearcher, compositeQuery);
+        return getResult(topDocs, indexSearcher, compositeQuery);
     }
 
 
 
-    public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, org.json.simple.parser.ParseException {
+    public static void main (String[] args) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
         TigerGeocoder tigerGeocoder = new TigerGeocoder();
         tigerGeocoder.setIndexDirectory(args[0]);
         tigerGeocoder.init();
         String queryAddress = args[1];
-        logger.info(tigerGeocoder.search(queryAddress).toJSONString());
+        logger.info(tigerGeocoder.search(queryAddress));
     }
 }

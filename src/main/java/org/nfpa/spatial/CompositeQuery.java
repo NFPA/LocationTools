@@ -3,18 +3,19 @@ package org.nfpa.spatial;
 import org.apache.lucene.search.Query;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 public class CompositeQuery {
     private Query query;
-    private HashMap<String, String> inputFields;
+    private LinkedHashMap<String, String> inputFields;
 
     CompositeQuery(){
-        this.inputFields  = new HashMap();
+        this.inputFields  = new LinkedHashMap<>();
     }
 
-    Map<String, String> getHashMap(){
+    LinkedHashMap<String, String> getHashMap(){
         return this.inputFields;
     }
 

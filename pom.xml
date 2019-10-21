@@ -165,6 +165,14 @@
             <version>1.1.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.wink/wink-json4j -->
+        <dependency>
+            <groupId>org.apache.wink</groupId>
+            <artifactId>wink-json4j</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+
         <dependency>
             <groupId>com.mapzen.jpostal</groupId>
             <artifactId>jpostal</artifactId>

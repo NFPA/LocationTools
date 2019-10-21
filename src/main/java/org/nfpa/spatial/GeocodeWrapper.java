@@ -1,5 +1,6 @@
 package org.nfpa.spatial;
 
+import org.apache.wink.json4j.JSONException;
 import org.locationtech.jts.io.ParseException;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class GeocodeWrapper implements Serializable {
     public GeocodeWrapper(TigerGeocoder tigerGeocoder) {
         this.tigerGeocoder = tigerGeocoder;
     }
-    public String search(String address) throws InvocationTargetException, IllegalAccessException, ParseException, IOException {
-        return tigerGeocoder.search(address).toJSONString();
+    public String search(String address) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
+        return tigerGeocoder.search(address).toString();
     }
 }
