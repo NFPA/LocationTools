@@ -20,10 +20,6 @@ import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class TigerProcessor {
@@ -42,7 +38,7 @@ public class TigerProcessor {
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
-        Logger.getLogger("org").setLevel(Level.WARN);
+        Logger.getLogger("org.apache.spark.api.java.JavaSparkContext").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 

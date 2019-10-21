@@ -10,14 +10,9 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class BatchGeocoder {
 
@@ -41,7 +36,7 @@ public class BatchGeocoder {
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
-        Logger.getLogger("org").setLevel(Level.WARN);
+        Logger.getLogger("org.apache.spark.api.java.JavaSparkContext").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
