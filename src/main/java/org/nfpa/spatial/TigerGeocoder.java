@@ -14,6 +14,7 @@ import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.wink.json4j.JSONArray;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.OrderedJSONObject;
 import org.locationtech.jts.geom.Point;
@@ -116,39 +117,47 @@ public class TigerGeocoder implements Serializable {
         interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
-    private OrderedJSONObject getResult(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
-        Document resultDoc;
-        OrderedJSONObject resultJSON = new OrderedJSONObject();
-        resultJSON.putAll(compositeQuery.getHashMap());
+    private JSONArray getResult(TopDocs topDocs, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
+        Document doc;
+        OrderedJSONObject resultJSON;
+        JSONArray results = new JSONArray();
 
-        if (results.totalHits.value > 0) {
-            resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
-            resultJSON.put("SCORE", results.scoreDocs[0].score);
-            for (IndexableField field : resultDoc) {
+        for (int i = 0; i < topDocs.totalHits.value & i < 3; i++) {
+            doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
+            resultJSON = getJSONFromDoc(doc, compositeQuery);
+            resultJSON.put("SCORE", topDocs.scoreDocs[i].score);
+            resultJSON.putAll(compositeQuery.getHashMap());
+            results.add(resultJSON);
+        }
+        return results;
+    }
+
+    private OrderedJSONObject getJSONFromDoc(Document doc, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
+        OrderedJSONObject resultJSON = new OrderedJSONObject();
+            for (IndexableField field : doc) {
                 resultJSON.put(field.name(), field.stringValue());
             }
             if(compositeQuery.containsInputField(IP_HOUSE_FIELD)){
+                String houseNumber = compositeQuery.get(IP_HOUSE_FIELD);
                 try{
-                    Integer.parseInt(compositeQuery.get(IP_HOUSE_FIELD));
+                    int hNo = Integer.parseInt(houseNumber);
                     Point pt = interpolator.getInterpolation(
-                            resultDoc,
-                            compositeQuery.get(IP_HOUSE_FIELD),
+                            doc,
+                            hNo,
                             "GEOMETRY"
                     );
                     resultJSON.put("LINT_LAT", pt.getY());
                     resultJSON.put("LINT_LONG", pt.getX());
                 } catch(NumberFormatException nfe){
-                    logger.info("Bad house number");
+                    logger.info("Bad house number" + houseNumber);
                 }
             }
-        }
-
-        return new OrderedJSONObject(resultJSON);
+        return resultJSON;
     }
 
 
 
-    OrderedJSONObject search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
+    JSONArray search(String address) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
 
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
