@@ -12,10 +12,17 @@ import java.lang.reflect.InvocationTargetException;
 public class GeocodeWrapper implements Serializable {
     private TigerGeocoder tigerGeocoder;
 
-    public GeocodeWrapper(TigerGeocoder tigerGeocoder) {
+    GeocodeWrapper(String indexDir) throws IOException {
+        this.tigerGeocoder = new TigerGeocoder();
+        this.tigerGeocoder.setIndexDirectory(indexDir);
+        this.tigerGeocoder.init();
+    }
+
+    GeocodeWrapper(TigerGeocoder tigerGeocoder) {
         this.tigerGeocoder = tigerGeocoder;
     }
-    public String search(String address) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
-        return tigerGeocoder.search(address).toString();
+
+    String search(String address, int numRes) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
+        return tigerGeocoder.search(address, numRes).toString();
     }
 }

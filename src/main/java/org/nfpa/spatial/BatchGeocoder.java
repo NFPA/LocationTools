@@ -46,16 +46,12 @@ public class BatchGeocoder {
     }
 
     private void registerGeocoderUDF(String indexDir) throws IOException {
-        geocoder = new TigerGeocoder();
-        geocoder.setIndexDirectory(indexDir);
-        geocoder.init();
-        
-        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(geocoder);
+        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
 
         sqlContext = new SQLContext(jsc);
         sqlContext.udf().register(
                 "FN_GEOCODE",
-                (String address) -> geocodeWrapper.search(address),
+                (String address) -> geocodeWrapper.search(address, 1),
                 DataTypes.StringType);
     }
 
