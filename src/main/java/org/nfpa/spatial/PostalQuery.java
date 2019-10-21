@@ -28,7 +28,7 @@ public class PostalQuery {
     private static JSONObject abbreviations;
     private static Logger logger = Logger.getLogger(PostalQuery.class);
 
-    PostalQuery() throws IOException, ParseException {
+    PostalQuery() {
         initLibPostal();
         getAbbreviations();
     }

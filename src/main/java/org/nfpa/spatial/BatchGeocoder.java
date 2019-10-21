@@ -45,7 +45,7 @@ public class BatchGeocoder {
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
-    private void registerGeocoderUDF(String indexDir) throws IOException, ParseException {
+    private void registerGeocoderUDF(String indexDir) throws IOException {
         geocoder = new TigerGeocoder();
         geocoder.setIndexDirectory(indexDir);
         geocoder.init();
@@ -98,9 +98,13 @@ public class BatchGeocoder {
                 .option("quote", "\u0000")
                 .csv(outputPath + "output/");
         logger.info("Successfully written to disk");
+
+        jsc.stop();
+        spark.stop();
+        spark.close();
     }
 
-    public static void main(String[] args) throws IOException, ParseException {
+    public static void main(String[] args) throws IOException {
 
         String inputCSVPath = args[0];
         String indexPath = args[1];
@@ -110,9 +114,6 @@ public class BatchGeocoder {
         bg.initSpark();
         bg.initHadoop();
         bg.registerGeocoderUDF(indexPath);
-
         bg.batchGeocode(inputCSVPath, outputPath);
-
-        jsc.stop();
     }
 }
