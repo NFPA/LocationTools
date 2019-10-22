@@ -160,7 +160,10 @@ public class TigerGeocoder implements Serializable {
     }
 
     JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
-
+        if (address == null) {
+            logger.warn("null input address");
+            return new JSONArray();
+        }
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, numRes);
