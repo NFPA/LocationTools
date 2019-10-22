@@ -164,6 +164,7 @@ public class TigerGeocoder implements Serializable {
 //            logger.warn("null input address");
 //            return new JSONArray();
 //        }
+        postalQuery = new PostalQuery();
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, numRes);

@@ -26,8 +26,7 @@ public class BatchGeocoder {
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("TigerProcessor")
-                .setMaster("local[*]");
+                .setAppName("BatchGeocoder");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
