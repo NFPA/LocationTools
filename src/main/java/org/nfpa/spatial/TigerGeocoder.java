@@ -33,23 +33,23 @@ import java.util.Map;
 
 public class TigerGeocoder implements Serializable {
 
-    private static SpatialContext ctx;
-    private static SpatialStrategy strategy;
-    private static Directory directory;
-    private static ShapeReader shapeReader;
-    private static Interpolator interpolator;
-    private PostalQuery postalQuery;
-    private static InterpolationMapper interpolationMapper;
-    private static FileSystem hdfs;
+    private  SpatialContext ctx;
+    private  SpatialStrategy strategy;
+    private  Directory directory;
+    private  ShapeReader shapeReader;
+    private  Interpolator interpolator;
+    private  PostalQuery postalQuery;
+    private  InterpolationMapper interpolationMapper;
+    private  FileSystem hdfs;
 
-    private static final String IP_HOUSE_FIELD = "ip_postal_house_number";
+    private  final String IP_HOUSE_FIELD = "ip_postal_house_number";
 
-    private static Logger logger = Logger.getLogger(TigerGeocoder.class);
+    private  Logger logger = Logger.getLogger(TigerGeocoder.class);
 
 
-    private static String INDEX_DIRECTORY;
-    private static Configuration hConf;
-    private static IndexSearcher indexSearcher;
+    private String INDEX_DIRECTORY;
+    private  Configuration hConf;
+    private IndexSearcher indexSearcher;
 
 
     private void initGeoStuff() throws IOException {
@@ -160,10 +160,6 @@ public class TigerGeocoder implements Serializable {
     }
 
     JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
-//        if (postalQuery == null) {
-//            logger.warn("null input address");
-//            return new JSONArray();
-//        }
         postalQuery = new PostalQuery();
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
@@ -178,6 +174,6 @@ public class TigerGeocoder implements Serializable {
         tigerGeocoder.init();
         String queryAddress = args[1];
         int numRes = Integer.parseInt(args[2]);
-        logger.info(tigerGeocoder.search(queryAddress, numRes));
+        tigerGeocoder.logger.info(tigerGeocoder.search(queryAddress, numRes));
     }
 }

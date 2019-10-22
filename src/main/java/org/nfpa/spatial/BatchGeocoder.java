@@ -17,12 +17,11 @@ import java.io.InputStream;
 public class BatchGeocoder {
 
 
-    private static JavaSparkContext jsc;
-    private static SparkSession spark;
-    private static SQLContext sqlContext;
-    private static Configuration hConf;
-    private static TigerGeocoder geocoder;
-    private static Logger logger = Logger.getLogger("BatchGeocoder");
+    private  JavaSparkContext jsc;
+    private  SparkSession spark;
+    private  SQLContext sqlContext;
+    private  Configuration hConf;
+    private  Logger logger = Logger.getLogger("BatchGeocoder");
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
