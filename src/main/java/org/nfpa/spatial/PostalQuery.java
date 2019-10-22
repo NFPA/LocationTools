@@ -16,12 +16,13 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PostalQuery {
+public class PostalQuery implements Serializable {
 
     private static Map<String, Method> methodMap;
     private static AddressParser p;

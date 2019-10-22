@@ -90,7 +90,7 @@ public class BatchGeocoder {
                 .option("escape", "\"")
                 .option("quote", "\"")
                 .csv(outputPath + "output/");
-        sqlContext.sql("create table temp.mytable as select * from result");
+//        sqlContext.sql("create table temp.mytable as select * from result");
 
         logger.info("Successfully written to disk");
 
