@@ -36,7 +36,6 @@ public class TigerGeocoder implements Serializable {
     private  SpatialContext ctx;
     private  SpatialStrategy strategy;
     private  Directory directory;
-    private  ShapeReader shapeReader;
     private  Interpolator interpolator;
     private  PostalQuery postalQuery;
     private  InterpolationMapper interpolationMapper;
@@ -52,18 +51,7 @@ public class TigerGeocoder implements Serializable {
     private IndexSearcher indexSearcher;
 
 
-    private void initGeoStuff() throws IOException {
-        ctx = JtsSpatialContext.GEO;
-        shapeReader = ctx.getFormats().getReader(ShapeIO.WKT);
-        int maxLevels = 5; //precision for geohash
-        SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
-        strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
-
-//        interpolationMapper = new InterpolationMapper();
-    }
-
     void init() throws IOException {
-        this.initGeoStuff();
         this.initHadoop();
         this.initLucene();
         this.postalQuery = new PostalQuery();
