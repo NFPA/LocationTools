@@ -161,7 +161,7 @@ public class PostalQuery {
         return String.join(" ", elems);
     }
 
-    public CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
+    CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
         ParsedComponent[] addComp = p.parseAddress(address);
         Query query = new MatchAllDocsQuery();

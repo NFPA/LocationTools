@@ -38,7 +38,7 @@ public class TigerGeocoder implements Serializable {
     private static Directory directory;
     private static ShapeReader shapeReader;
     private static Interpolator interpolator;
-    private static PostalQuery postalQuery;
+    private PostalQuery postalQuery;
     private static InterpolationMapper interpolationMapper;
     private static FileSystem hdfs;
 
@@ -66,7 +66,7 @@ public class TigerGeocoder implements Serializable {
         this.initGeoStuff();
         this.initHadoop();
         this.initLucene();
-        postalQuery = new PostalQuery();
+        this.postalQuery = new PostalQuery();
         interpolator = new Interpolator();
     }
 
@@ -160,7 +160,7 @@ public class TigerGeocoder implements Serializable {
     }
 
     JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
-        if (address == null) {
+        if (postalQuery == null) {
             logger.warn("null input address");
             return new JSONArray();
         }
