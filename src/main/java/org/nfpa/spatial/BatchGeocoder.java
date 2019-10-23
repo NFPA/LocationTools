@@ -39,16 +39,11 @@ public class BatchGeocoder {
     }
 
     private void registerGeocoderUDF(String indexDir) throws IOException {
-        final GeocodeWrapper[] geocodeWrapper = {new GeocodeWrapper(indexDir)};
+        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
         sqlContext = new SQLContext(jsc);
         sqlContext.udf().register(
                 "FN_GEOCODE",
-                (String address) -> {
-                    if (geocodeWrapper[0] == null){
-                        geocodeWrapper[0] = new GeocodeWrapper(indexDir);
-                    }
-                    return geocodeWrapper[0].search(address, 1);
-                },
+                (String address) -> geocodeWrapper.search(address, 1),
                 DataTypes.StringType);
     }
 
