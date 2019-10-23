@@ -25,7 +25,7 @@ public class BatchGeocoder {
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("BatchGeocoder").setMaster("local");
+                .setAppName("BatchGeocoder");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
@@ -39,12 +39,14 @@ public class BatchGeocoder {
     }
 
     private void registerGeocoderUDF(String indexDir) throws IOException {
-        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
 
         sqlContext = new SQLContext(jsc);
         sqlContext.udf().register(
                 "FN_GEOCODE",
-                (String address) -> geocodeWrapper.search(address, 1),
+                (String address) -> {
+                    GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
+                    return geocodeWrapper.search(address, 1);
+                },
                 DataTypes.StringType);
     }
 

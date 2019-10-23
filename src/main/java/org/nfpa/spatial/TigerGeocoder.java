@@ -148,7 +148,6 @@ public class TigerGeocoder implements Serializable {
     }
 
     JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
-        postalQuery = new PostalQuery();
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, numRes);
