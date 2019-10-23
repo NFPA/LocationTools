@@ -5,7 +5,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
@@ -13,6 +15,10 @@ import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 public class BatchGeocoder {
 
@@ -26,10 +32,10 @@ public class BatchGeocoder {
     private void initSpark(){
         SparkConf conf = new SparkConf()
                 .setAppName("BatchGeocoder");
+//                .setAppName("BatchGeocoder")
+//                .setMaster("local");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
-
-
 
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
@@ -43,7 +49,9 @@ public class BatchGeocoder {
         sqlContext = new SQLContext(jsc);
         sqlContext.udf().register(
                 "FN_GEOCODE",
-                (String address) -> geocodeWrapper.search(address, 1),
+                (String address) -> {
+                    return geocodeWrapper.search(address, 1);
+                },
                 DataTypes.StringType);
     }
 
@@ -62,35 +70,53 @@ public class BatchGeocoder {
         return IOUtils.toString(in);
     }
 
-    private void batchGeocode(String csvPath, String outputPath) throws IOException {
+    private void batchGeocode(String csvPath, String indexDir, String outputPath) throws IOException {
         Dataset<Row> dataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
                 .option("header", true)
                 .load(csvPath);
-        dataFrame.show(20);
-        dataFrame.createOrReplaceTempView("address_data");
+        final int addressIndex = dataFrame.schema().fieldIndex("address");
 
-        String query = readResource("geocode.sql");
+        JavaRDD<Row> check = dataFrame.toJavaRDD();
 
-        logger.info("Executing: " + query);
+        JavaRDD<String> newRDD= check.mapPartitions((FlatMapFunction<Iterator<Row>, String>) iterator -> {
+            GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
+            List<String> addresses = new ArrayList<String>();
+            while(iterator.hasNext()){
+                Row row = iterator.next();
+                addresses.add(
+                        geocodeWrapper.search(row.getString(addressIndex), 1)
+                );
+            }
+            return addresses.iterator();
+        });
+        newRDD.saveAsTextFile(outputPath);
+//        logger.info(Arrays.asList(newRDD.collect().toArray()));
 
-        Dataset resultDF = spark.sql(query);
-        resultDF.createOrReplaceTempView("result");
-
-        logger.info("Writing results to disk ...");
-        resultDF.show(20);
-        resultDF.write()
-                .option("header", true)
-                .option("delimiter", "\t")
-                .option("escape", "\"")
-                .option("quote", "\"")
-                .csv(outputPath + "output/");
-
-//        sqlContext.sql("create table temp.mytable as select * from result");
-
-        logger.info("Successfully written to disk");
+//        dataFrame.show(20);
+//        dataFrame.createOrReplaceTempView("address_data");
+//
+//        String query = readResource("geocode.sql");
+//
+//        logger.info("Executing: " + query);
+//
+//        Dataset resultDF = spark.sql(query);
+//        resultDF.createOrReplaceTempView("result");
+//
+//        logger.info("Writing results to disk ...");
+//        resultDF.show(20);
+//        resultDF.write()
+//                .option("header", true)
+//                .option("delimiter", "\t")
+//                .option("escape", "\"")
+//                .option("quote", "\"")
+//                .csv(outputPath + "output/");
+//
+////        sqlContext.sql("create table temp.mytable as select * from result");
+//
+//        logger.info("Successfully written to disk");
 
         jsc.stop();
         spark.stop();
@@ -105,7 +131,7 @@ public class BatchGeocoder {
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.registerGeocoderUDF(indexPath);
-        bg.batchGeocode(inputCSVPath, outputPath);
+//        bg.registerGeocoderUDF(indexPath);
+        bg.batchGeocode(inputCSVPath, indexPath, outputPath);
     }
 }
