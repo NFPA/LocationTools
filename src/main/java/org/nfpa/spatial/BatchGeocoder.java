@@ -17,15 +17,15 @@ import java.io.InputStream;
 public class BatchGeocoder {
 
 
-    private  JavaSparkContext jsc;
-    private  SparkSession spark;
-    private  SQLContext sqlContext;
-    private  Configuration hConf;
-    private  Logger logger = Logger.getLogger("BatchGeocoder");
+    private static JavaSparkContext jsc;
+    private static SparkSession spark;
+    private static SQLContext sqlContext;
+    private static Configuration hConf;
+    private static Logger logger = Logger.getLogger("BatchGeocoder");
 
     private void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("BatchGeocoder");
+                .setAppName("BatchGeocoder").setMaster("local");
         conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
@@ -98,7 +98,6 @@ public class BatchGeocoder {
     }
 
     public static void main(String[] args) throws IOException {
-
         String inputCSVPath = args[0];
         String indexPath = args[1];
         String outputPath = args[2];

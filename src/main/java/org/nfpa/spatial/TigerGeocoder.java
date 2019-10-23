@@ -33,22 +33,22 @@ import java.util.Map;
 
 public class TigerGeocoder implements Serializable {
 
-    private  SpatialContext ctx;
-    private  SpatialStrategy strategy;
-    private  Directory directory;
-    private  Interpolator interpolator;
-    private  PostalQuery postalQuery;
-    private  InterpolationMapper interpolationMapper;
-    private  FileSystem hdfs;
+    private static SpatialContext ctx;
+    private static SpatialStrategy strategy;
+    private static Directory directory;
+    private static Interpolator interpolator;
+    private static PostalQuery postalQuery;
+    private static InterpolationMapper interpolationMapper;
+    private static FileSystem hdfs;
 
-    private  final String IP_HOUSE_FIELD = "ip_postal_house_number";
+    private static final String IP_HOUSE_FIELD = "ip_postal_house_number";
 
-    private  Logger logger = Logger.getLogger(TigerGeocoder.class);
+    private static Logger logger = Logger.getLogger(TigerGeocoder.class);
 
 
-    private String INDEX_DIRECTORY;
-    private  Configuration hConf;
-    private IndexSearcher indexSearcher;
+    private static String INDEX_DIRECTORY;
+    private static Configuration hConf;
+    private static IndexSearcher indexSearcher;
 
 
     void init() throws IOException {
