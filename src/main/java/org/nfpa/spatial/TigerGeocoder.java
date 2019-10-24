@@ -9,20 +9,12 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.*;
 import org.apache.lucene.spatial.SpatialStrategy;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.wink.json4j.JSONArray;
 import org.apache.wink.json4j.JSONException;
-import org.apache.wink.json4j.OrderedJSONObject;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.spatial4j.context.SpatialContext;
-import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
-import org.locationtech.spatial4j.io.ShapeIO;
-import org.locationtech.spatial4j.io.ShapeReader;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
@@ -30,13 +22,10 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class TigerGeocoder implements Serializable {
-
-    private static SpatialContext ctx;
-    private static SpatialStrategy strategy;
     private static Directory directory;
     private static Interpolator interpolator;
     private static PostalQuery postalQuery;
-    private static InterpolationMapper interpolationMapper;
+    private static Query searchQuery;
     private static FileSystem hdfs;
 
     private static final String IP_HOUSE_FIELD = "ip_postal_house_number";
@@ -102,7 +91,7 @@ public class TigerGeocoder implements Serializable {
         Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
         int hno = Integer.parseInt(compositeQuery.get("ip_house_number"));
 
-        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
+//        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
     private List<LinkedHashMap> getResult(TopDocs topDocs, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
@@ -147,9 +136,8 @@ public class TigerGeocoder implements Serializable {
 
     List<LinkedHashMap> search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
-        Query searchQuery = compositeQuery.getQuery();
+        searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, numRes);
-
         return getResult(topDocs, indexSearcher, compositeQuery);
     }
 
