@@ -27,9 +27,7 @@ import org.locationtech.spatial4j.io.ShapeReader;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 public class TigerGeocoder implements Serializable {
 
@@ -107,19 +105,19 @@ public class TigerGeocoder implements Serializable {
         interpolationMapper.mapWTKInterpolations(resultDoc, hno);
     }
 
-    private JSONArray getResult(TopDocs topDocs, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
+    private List<LinkedHashMap> getResult(TopDocs topDocs, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
         Document doc;
         LinkedHashMap resultHMap;
-        JSONArray results = new JSONArray();
+        List<LinkedHashMap> results = new ArrayList<LinkedHashMap>();
 
         if(topDocs.scoreDocs.length == 0) return results;
 
         for (int i = 0; i < topDocs.scoreDocs.length; i++) {
             doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
             resultHMap = getJSONFromDoc(doc, compositeQuery);
-            resultHMap.put("SCORE", topDocs.scoreDocs[i].score);
+            resultHMap.put("SCORE", "" + topDocs.scoreDocs[i].score);
             resultHMap.putAll(compositeQuery.getHashMap());
-            results.add(new OrderedJSONObject(resultHMap));
+            results.add(resultHMap);
         }
         return results;
     }
@@ -138,8 +136,8 @@ public class TigerGeocoder implements Serializable {
                             hNo,
                             "GEOMETRY"
                     );
-                    resultHMap.put("LINT_LAT", pt.getY());
-                    resultHMap.put("LINT_LONG", pt.getX());
+                    resultHMap.put("LINT_LAT", "" + pt.getY());
+                    resultHMap.put("LINT_LONG", "" + pt.getX());
                 } catch(NumberFormatException nfe){
                     logger.info("Bad house number: " + houseNumber);
                 }
@@ -147,7 +145,7 @@ public class TigerGeocoder implements Serializable {
         return resultHMap;
     }
 
-    JSONArray search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
+    List<LinkedHashMap> search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         Query searchQuery = compositeQuery.getQuery();
         TopDocs topDocs = indexSearcher.search(searchQuery, numRes);

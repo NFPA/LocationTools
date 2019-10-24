@@ -9,14 +9,16 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.StructField;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
+import scala.collection.immutable.Map;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,17 +46,6 @@ public class BatchGeocoder {
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
-    private void registerGeocoderUDF(String indexDir) throws IOException {
-        GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
-        sqlContext = new SQLContext(jsc);
-        sqlContext.udf().register(
-                "FN_GEOCODE",
-                (String address) -> {
-                    return geocodeWrapper.search(address, 1);
-                },
-                DataTypes.StringType);
-    }
-
     private void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
@@ -71,52 +62,54 @@ public class BatchGeocoder {
     }
 
     private void batchGeocode(String csvPath, String indexDir, String outputPath) throws IOException {
-        Dataset<Row> dataFrame = spark.read().format("csv")
+        Dataset<Row> inputDataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
                 .option("header", true)
-                .load(csvPath);
-        final int addressIndex = dataFrame.schema().fieldIndex("address");
+                .load(csvPath).repartition(1);
+        final int addressIndex = inputDataFrame.schema().fieldIndex("address");
+        final int joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
 
-        JavaRDD<Row> check = dataFrame.toJavaRDD();
+        JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
 
-        JavaRDD<String> newRDD= check.mapPartitions((FlatMapFunction<Iterator<Row>, String>) iterator -> {
+        JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
-            List<String> addresses = new ArrayList<String>();
+            List<Row> addresses = new ArrayList<Row>();
+            Map[] result; String joinKey;
             while(iterator.hasNext()){
                 Row row = iterator.next();
+                joinKey = row.getString(joinKeyIndex);
+                result = geocodeWrapper.search(row.getString(addressIndex), 2);
+
                 addresses.add(
-                        geocodeWrapper.search(row.getString(addressIndex), 1)
+                        RowFactory.create(joinKey, result)
                 );
             }
             return addresses.iterator();
         });
-        newRDD.saveAsTextFile(outputPath);
-//        logger.info(Arrays.asList(newRDD.collect().toArray()));
 
-//        dataFrame.show(20);
-//        dataFrame.createOrReplaceTempView("address_data");
-//
-//        String query = readResource("geocode.sql");
-//
-//        logger.info("Executing: " + query);
-//
-//        Dataset resultDF = spark.sql(query);
-//        resultDF.createOrReplaceTempView("result");
-//
-//        logger.info("Writing results to disk ...");
-//        resultDF.show(20);
-//        resultDF.write()
-//                .option("header", true)
-//                .option("delimiter", "\t")
-//                .option("escape", "\"")
-//                .option("quote", "\"")
-//                .csv(outputPath + "output/");
-//
-////        sqlContext.sql("create table temp.mytable as select * from result");
-//
-//        logger.info("Successfully written to disk");
+        ArrayType searchResultsType = DataTypes.createArrayType(
+                DataTypes.createMapType(DataTypes.StringType, DataTypes.StringType)
+        );
+
+        StructField[] fields = new StructField[]{
+                DataTypes.createStructField("join_key", DataTypes.StringType, false),
+                DataTypes.createStructField("address_output", searchResultsType, false)
+        };
+
+        Dataset outputFrame = spark.createDataFrame(newRDD, DataTypes.createStructType(fields));
+
+        outputFrame.show(20);
+        outputFrame.createOrReplaceTempView("geocoded_output");
+
+        String saveToTableQuery = readResource("saveToHive.sql");
+
+        logger.info("Executing: " + saveToTableQuery);
+
+        spark.sql(saveToTableQuery);
+
+        logger.info("Successfully written to disk");
 
         jsc.stop();
         spark.stop();
@@ -131,7 +124,6 @@ public class BatchGeocoder {
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-//        bg.registerGeocoderUDF(indexPath);
         bg.batchGeocode(inputCSVPath, indexPath, outputPath);
     }
 }

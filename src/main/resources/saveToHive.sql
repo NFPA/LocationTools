@@ -1,0 +1,1 @@
+create table temp.geocoded_output as select * from geocoded_output
