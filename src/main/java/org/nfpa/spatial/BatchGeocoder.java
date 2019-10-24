@@ -69,17 +69,23 @@ public class BatchGeocoder {
                 .option("header", true)
                 .load(csvPath).repartition(1);
         final int addressIndex = inputDataFrame.schema().fieldIndex("address");
-        final int joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
+        int joinKeyIndex = -1;
+        try{
+            joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
+        } catch(Exception e){
+            logger.warn("join_key not present");
+        }
 
         JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
 
+        int finalJoinKeyIndex = joinKeyIndex;
         JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
             List<Row> addresses = new ArrayList<Row>();
             Map[] result; String joinKey;
             while(iterator.hasNext()){
                 Row row = iterator.next();
-                joinKey = row.getString(joinKeyIndex);
+                joinKey = finalJoinKeyIndex > -1 ? row.getString(finalJoinKeyIndex) : "" + row.getString(addressIndex).hashCode();
                 result = geocodeWrapper.search(row.getString(addressIndex), 2);
 
                 addresses.add(
