@@ -42,7 +42,7 @@ public class BatchGeocoder {
         spark = SparkSession.builder().config(conf).getOrCreate();
         jsc = new JavaSparkContext(spark.sparkContext());
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
-        Logger.getLogger("org.apache.spark.api.java.JavaSparkContext").setLevel(Level.WARN);
+        Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
@@ -61,13 +61,13 @@ public class BatchGeocoder {
         return IOUtils.toString(in);
     }
 
-    private void batchGeocode(String csvPath, String indexDir, String outputPath) throws IOException {
+    private void batchGeocode(String csvPath, String indexDir, String outputPath, int nPartitions) throws IOException {
         Dataset<Row> inputDataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
                 .option("header", true)
-                .load(csvPath).repartition(1);
+                .load(csvPath).repartition(nPartitions);
         final int addressIndex = inputDataFrame.schema().fieldIndex("address");
         int joinKeyIndex = -1;
         try{
@@ -113,7 +113,7 @@ public class BatchGeocoder {
 
         logger.info("Executing: " + saveToTableQuery);
 
-        spark.sql(saveToTableQuery);
+//        spark.sql(saveToTableQuery);
 
         logger.info("Successfully written to disk");
 
@@ -126,10 +126,11 @@ public class BatchGeocoder {
         String inputCSVPath = args[0];
         String indexPath = args[1];
         String outputPath = args[2];
+        int partitions = Integer.parseInt(args[3]);
 
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.batchGeocode(inputCSVPath, indexPath, outputPath);
+        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions);
     }
 }

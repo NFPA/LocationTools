@@ -29,7 +29,7 @@ public class Driver {
             break;
             case "--batch":{
                 logger.info("Batch Geocoding");
-                BatchGeocoder.main(new String[]{params[1], params[2], params[3]});
+                BatchGeocoder.main(new String[]{params[1], params[2], params[3], params[4]});
             }
             break;
         }
