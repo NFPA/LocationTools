@@ -86,7 +86,7 @@ public class BatchGeocoder {
             while(iterator.hasNext()){
                 Row row = iterator.next();
                 joinKey = finalJoinKeyIndex > -1 ? row.getString(finalJoinKeyIndex) : "" + row.getString(addressIndex).hashCode();
-                result = geocodeWrapper.search(row.getString(addressIndex), 2);
+                result = geocodeWrapper.getSearchMap(row.getString(addressIndex), 2);
 
                 addresses.add(
                         RowFactory.create(joinKey, result)
@@ -113,9 +113,9 @@ public class BatchGeocoder {
 
         logger.info("Executing: " + saveToTableQuery);
 
-//        spark.sql(saveToTableQuery);
+        spark.sql(saveToTableQuery);
 
-        logger.info("Successfully written to disk");
+        logger.info("Successfully written to hive table");
 
         jsc.stop();
         spark.stop();
