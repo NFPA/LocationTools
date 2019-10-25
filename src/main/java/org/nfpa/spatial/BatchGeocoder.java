@@ -80,19 +80,20 @@ public class BatchGeocoder {
 
         JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
-            List<Row> addresses = new ArrayList<Row>();
-            Map[] result; String joinKey;
+            List<Row> outputRows = new ArrayList<Row>();
+            Map[] result; String joinKey, address;
             while(iterator.hasNext()){
                 Row row = iterator.next();
+                address = row.getString(addressIndex);
                 joinKey = joinKeyIndex > -1 ?
-                        row.getString(joinKeyIndex) : "" + row.getString(addressIndex).hashCode();
-                result = geocodeWrapper.getSearchMap(row.getString(addressIndex), 2);
+                        row.getString(joinKeyIndex) : "" + address.hashCode();
+                result = geocodeWrapper.getSearchMap(address, 2);
 
-                addresses.add(
-                        RowFactory.create(joinKey, result)
+                outputRows.add(
+                        RowFactory.create(joinKey, address, result)
                 );
             }
-            return addresses.iterator();
+            return outputRows.iterator();
         });
 
         ArrayType searchResultsType = DataTypes.createArrayType(
@@ -101,6 +102,7 @@ public class BatchGeocoder {
 
         StructField[] fields = new StructField[]{
                 DataTypes.createStructField("join_key", DataTypes.StringType, false),
+                DataTypes.createStructField("address", DataTypes.StringType, true),
                 DataTypes.createStructField("address_output", searchResultsType, false)
         };
 
