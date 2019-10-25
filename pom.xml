@@ -19,9 +19,25 @@
         <geospark.version>1.2.0</geospark.version>
         <scala.version>2.11</scala.version>
         <spark.compatible.verison>2.3</spark.compatible.verison>
+
+        <main.verticle>org.nfpa.spatial.GeocoderAPIVerticle</main.verticle>
+        <vertex.version>3.8.2</vertex.version>
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+            <version>${vertex.version}</version>
+        </dependency>
+        <!-- Add hazelcast deps if you want it clusterable -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-hazelcast</artifactId>
+            <version>${vertex.version}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-sql -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -233,7 +249,13 @@
                                 <!-- add Main-Class to manifest file -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.nfpa.spatial.Driver</mainClass>
+                                    <manifestEntries>
+                                        <Main-Class>io.vertx.core.Launcher</Main-Class>
+                                        <Main-Verticle>${main.verticle}</Main-Verticle>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
                                 </transformer>
                             </transformers>
 

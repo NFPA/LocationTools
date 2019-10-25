@@ -1,0 +1,6 @@
+{
+  "api.version": "1.0",
+  "app.name": "location-tools",
+  "index.dir": "/home/ubuntu/IdeaProjects/LocationTools/index/",
+  "http.port": 8080
+}
