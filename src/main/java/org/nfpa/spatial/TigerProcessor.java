@@ -134,7 +134,7 @@ public class TigerProcessor {
         for (String state :availableStates){
             TigerProcessor processor = new TigerProcessor();
             processor.initSpark();
-            query = processor.readResource("tiger_join.sql");
+            query = processor.readResource("tigerJoin.sql");
             Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
 
             countyDF = processor.readDF(TIGER_BASE, "county", "ALL");
