@@ -32,7 +32,16 @@ public class GeocodeWrapper implements Serializable {
         return tigerGeocoder.search(address, numRes).toString();
     }
 
-    Map[] search(String address, int numRes) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
+    JSONArray getSearchJSONArray(String address, int numRes) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
+        List<LinkedHashMap> interRes = tigerGeocoder.search(address, numRes);
+        JSONArray result = new JSONArray();
+        for (LinkedHashMap elem: interRes){
+            result.add(new JSONObject(elem));
+        }
+        return result;
+    }
+
+    Map[] getSearchMap(String address, int numRes) throws InvocationTargetException, IllegalAccessException, ParseException, IOException, NoSuchFieldException, JSONException {
         List<LinkedHashMap> interRes = tigerGeocoder.search(address, numRes);
         Map[] result = new Map[interRes.size()];
         for (int i=0; i < result.length; i++){
