@@ -66,26 +66,26 @@ public class BatchGeocoder {
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
-                .option("header", true)
+                .option("header", false)
                 .load(csvPath).repartition(nPartitions);
-        final int addressIndex = inputDataFrame.schema().fieldIndex("address");
-        int joinKeyIndex = -1;
-        try{
-            joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
-        } catch(Exception e){
-            logger.warn("join_key not present");
+
+        int addressIndex, joinKeyIndex;
+        if(inputDataFrame.columns().length == 1){
+            addressIndex = 0; joinKeyIndex = -1;
+        } else {
+            addressIndex = 1; joinKeyIndex = 0;
         }
 
         JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
 
-        int finalJoinKeyIndex = joinKeyIndex;
         JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
             List<Row> addresses = new ArrayList<Row>();
             Map[] result; String joinKey;
             while(iterator.hasNext()){
                 Row row = iterator.next();
-                joinKey = finalJoinKeyIndex > -1 ? row.getString(finalJoinKeyIndex) : "" + row.getString(addressIndex).hashCode();
+                joinKey = joinKeyIndex > -1 ?
+                        row.getString(joinKeyIndex) : "" + row.getString(addressIndex).hashCode();
                 result = geocodeWrapper.getSearchMap(row.getString(addressIndex), 2);
 
                 addresses.add(
