@@ -8,13 +8,11 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.*;
-import org.apache.lucene.spatial.SpatialStrategy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.wink.json4j.JSONException;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.spatial4j.context.SpatialContext;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
