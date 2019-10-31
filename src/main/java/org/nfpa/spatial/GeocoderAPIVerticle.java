@@ -1,12 +1,7 @@
 package org.nfpa.spatial;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Route;
@@ -16,13 +11,12 @@ import org.apache.wink.json4j.JSONArray;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
 import org.apache.wink.json4j.OrderedJSONObject;
-import scala.collection.immutable.Map;
 
 import java.io.IOException;
 
 public class GeocoderAPIVerticle extends AbstractVerticle {
 
-    private GeocodeWrapper tigerGeocoder;
+    private GeocodeWrapper geocodeWrapper;
     private JSONObject errorResponse;
     private String address;
     private Integer numRes;
@@ -31,7 +25,7 @@ public class GeocoderAPIVerticle extends AbstractVerticle {
     private static Logger logger = Logger.getLogger(GeocoderAPIVerticle.class);
 
     private void init() throws IOException, JSONException {
-        tigerGeocoder = new GeocodeWrapper(config().getString("index.dir"));
+        geocodeWrapper = new GeocodeWrapper(config().getString("index.dir"));
         errorResponse = new JSONObject();
 
         result = new OrderedJSONObject();
@@ -56,7 +50,7 @@ public class GeocoderAPIVerticle extends AbstractVerticle {
             response.putHeader("content-type", "application/json");
 
             try {
-                results = tigerGeocoder.getSearchJSONArray(address, numRes);
+                results = geocodeWrapper.getSearchJSONArray(address, numRes);
                 result.put("input", address);
                 result.put("results", results);
 
