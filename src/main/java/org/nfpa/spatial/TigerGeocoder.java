@@ -8,6 +8,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.*;
+import org.apache.lucene.search.similarities.BooleanSimilarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.wink.json4j.JSONException;
@@ -47,6 +48,8 @@ public class TigerGeocoder implements Serializable {
         directory = FSDirectory.open(Paths.get(INDEX_DIRECTORY));
         IndexReader indexReader = DirectoryReader.open(directory);
         indexSearcher = new IndexSearcher(indexReader);
+        BooleanSimilarity similarity = new BooleanSimilarity();
+        indexSearcher.setSimilarity(similarity);
     }
 
     private void initHadoop(){
@@ -102,7 +105,7 @@ public class TigerGeocoder implements Serializable {
         for (int i = 0; i < topDocs.scoreDocs.length; i++) {
             doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
             resultHMap = getJSONFromDoc(doc, compositeQuery);
-            resultHMap.put("SCORE", "" + topDocs.scoreDocs[i].score);
+            resultHMap.put("SEARCH_SCORE", "" + topDocs.scoreDocs[i].score);
             resultHMap.putAll(compositeQuery.getHashMap());
             results.add(resultHMap);
         }
@@ -124,7 +127,7 @@ public class TigerGeocoder implements Serializable {
                             "GEOMETRY"
                     );
                     resultHMap.put("LINT_LAT", "" + pt.getY());
-                    resultHMap.put("LINT_LONG", "" + pt.getX());
+                    resultHMap.put("LINT_LON", "" + pt.getX());
                 } catch(NumberFormatException nfe){
                     logger.info("Bad house number: " + houseNumber);
                 }
