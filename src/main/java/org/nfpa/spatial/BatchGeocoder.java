@@ -61,13 +61,16 @@ public class BatchGeocoder {
         return IOUtils.toString(in);
     }
 
-    private void batchGeocode(String csvPath, String indexDir, String outputPath, int nPartitions) throws IOException {
+    private void batchGeocode(String csvPath, String indexDir, String outputPath, int nPartitions, float fraction) throws IOException {
         Dataset<Row> inputDataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
                 .option("header", false)
-                .load(csvPath).repartition(nPartitions);
+                .load(csvPath)
+                .sample(fraction)
+                .repartition(nPartitions);
+
 
         int addressIndex, joinKeyIndex;
         if(inputDataFrame.columns().length == 1){
@@ -129,10 +132,10 @@ public class BatchGeocoder {
         String indexPath = args[1];
         String outputPath = args[2];
         int partitions = Integer.parseInt(args[3]);
-
+        float fraction = Float.parseFloat(args[4]);
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions);
+        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions, fraction);
     }
 }
