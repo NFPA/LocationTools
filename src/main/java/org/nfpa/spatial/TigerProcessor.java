@@ -53,7 +53,7 @@ public class TigerProcessor {
     }
 
     String readResource(String resName)  throws IOException {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(resName);
         return IOUtils.toString(in);
     }
 
@@ -157,7 +157,7 @@ public class TigerProcessor {
             joinedData = spark.sql(query);
             logger.info("Query executed successfully");
 
-            logger.info(joinedData.head());
+            joinedData.head();
 
             joinedData
                     .write()
