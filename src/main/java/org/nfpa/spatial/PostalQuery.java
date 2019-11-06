@@ -19,7 +19,9 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PostalQuery implements Serializable {
@@ -64,33 +66,31 @@ public class PostalQuery implements Serializable {
 
         libPostalMap.forEach((k, v) -> {
             try {
-                methodMap.put(k, PostalQuery.class.getDeclaredMethod(v, Query.class, String.class));
+                methodMap.put(k, PostalQuery.class.getDeclaredMethod(v, String.class));
             } catch (NoSuchMethodException e) {
                 logger.warn(e.toString());
             }
         });
     }
 
-    private static Query addHouseClause(Query q, String houseNumber){
+    private static Query addHouseClause(String houseNumber){
         int hno;
         try {
             hno = Integer.parseInt(houseNumber);
         }catch (NumberFormatException nfe){
-            return q;
+            return null;
         }
         Query rAddQuery = IntRange.newContainsQuery("RADDRANGE", new int[]{hno}, new int[]{hno});
         Query lAddQuery = IntRange.newContainsQuery("LADDRANGE", new int[]{hno}, new int[]{hno});
         BooleanQuery.Builder hnoQueryBuilder = new BooleanQuery.Builder();
 
-        hnoQueryBuilder.add(q, BooleanClause.Occur.MUST);
         hnoQueryBuilder.add(rAddQuery, BooleanClause.Occur.SHOULD);
         hnoQueryBuilder.add(lAddQuery, BooleanClause.Occur.SHOULD);
-        return hnoQueryBuilder.build();
+        return new BoostQuery(hnoQueryBuilder.build(), Scores.HOUSE_NUMBER.getWeight());
     }
 
-    private static Query addStreetClause(Query q, String street){
+    private static Query addStreetClause(String street){
         BooleanQuery.Builder streetQueryBuilder = new BooleanQuery.Builder();
-        streetQueryBuilder.add(q, BooleanClause.Occur.MUST);
 
         String[] elems = street.split("\\s+");
         if (elems.length > 1){
@@ -101,16 +101,14 @@ public class PostalQuery implements Serializable {
             SpanNearQuery query = new SpanNearQuery(clauses, 0
                     , true);
             streetQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-            return streetQueryBuilder.build();
         } else {
             streetQueryBuilder.add(new FuzzyQuery(new Term("FULLNAME", street), 2), BooleanClause.Occur.SHOULD);
-            return streetQueryBuilder.build();
         }
+        return new BoostQuery(streetQueryBuilder.build(), Scores.ROAD.getWeight());
     }
 
-    private static Query addCityClause(Query q, String city){
+    private static Query addCityClause(String city){
         BooleanQuery.Builder cityQueryBuilder = new BooleanQuery.Builder();
-        cityQueryBuilder.add(q, BooleanClause.Occur.MUST);
 
         String[] elems = city.split("\\s+");
         if (elems.length > 1){
@@ -121,33 +119,30 @@ public class PostalQuery implements Serializable {
             SpanNearQuery query = new SpanNearQuery(clauses, 0
                     , true);
             cityQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
-            return cityQueryBuilder.build();
         } else {
             cityQueryBuilder.add(new FuzzyQuery(new Term("PLACE", city), 2), BooleanClause.Occur.MUST);
-            return cityQueryBuilder.build();
         }
+        return new BoostQuery(cityQueryBuilder.build(), Scores.CITY.getWeight());
     }
 
-    private static Query addZipClause(Query q, String zip){
+    private static Query addZipClause(String zip){
         Query ziplQuery = new TermQuery(new Term("ZIPL", zip));
         Query ziprQuery = new TermQuery(new Term("ZIPR", zip));
         BooleanQuery.Builder zipQueryBuilder = new BooleanQuery.Builder();
 
-        zipQueryBuilder.add(q, BooleanClause.Occur.MUST);
         zipQueryBuilder.add(ziplQuery, BooleanClause.Occur.SHOULD);
         zipQueryBuilder.add(ziprQuery, BooleanClause.Occur.SHOULD);
-        return zipQueryBuilder.build();
+        return new BoostQuery(zipQueryBuilder.build(), Scores.POSTCODE.getWeight());
     }
 
-    private static Query addStateClause(Query q, String state){
+    private static Query addStateClause(String state){
         Query stuspsQuery = new TermQuery(new Term("STUSPS", state));
         Query stNameQuery = new TermQuery(new Term("NAME", state));
         BooleanQuery.Builder stateQueryBuilder = new BooleanQuery.Builder();
 
-        stateQueryBuilder.add(q, BooleanClause.Occur.MUST);
         stateQueryBuilder.add(stuspsQuery, BooleanClause.Occur.SHOULD);
         stateQueryBuilder.add(stNameQuery, BooleanClause.Occur.SHOULD);
-        return stateQueryBuilder.build();
+        return new BoostQuery(stateQueryBuilder.build(), Scores.STATE.getWeight());
     }
 
     private static String replaceWithAbbrev(String comp){
@@ -164,22 +159,28 @@ public class PostalQuery implements Serializable {
 
     CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
-        ParsedComponent[] addComp = p.parseAddress(address);
-        Query query = new MatchAllDocsQuery();
+        ParsedComponent[] parsedComponents = p.parseAddress(address);
+        List<Query> queryComps = new ArrayList<>();
+        BooleanQuery.Builder addressQueryBuilder = new BooleanQuery.Builder();
 
         CompositeQuery compositeQuery = new CompositeQuery();
         String label, value;
 
-        for(ParsedComponent comp: addComp){
+        for(ParsedComponent comp: parsedComponents){
             label = comp.getLabel();
             value = replaceWithAbbrev(comp.getValue());
             compositeQuery.addInputField("ip_postal_" + label, value);
             if (methodMap.containsKey(label)) {
-                Object[] parameters = {query, value};
-                query = (Query) methodMap.get(label).invoke(null, parameters);
+                Object[] parameters = {value};
+                queryComps.add((Query) methodMap.get(label).invoke(null, parameters));
             }
         }
-        compositeQuery.setQuery(query);
+        for (Query query : queryComps){
+            if (query != null){
+                addressQueryBuilder.add(query, BooleanClause.Occur.SHOULD);
+            }
+        }
+        compositeQuery.setQuery(addressQueryBuilder.build());
         return compositeQuery;
     }
 }
