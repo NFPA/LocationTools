@@ -17,19 +17,23 @@ import java.io.IOException;
 public class GeocoderAPIVerticle extends AbstractVerticle {
 
     private GeocodeWrapper geocodeWrapper;
+    private ReverseGeocodeWrapper reverseGeocodeWrapper;
     private JSONObject errorResponse;
     private String address;
+    double ipLat, ipLon;
+    float radiusKM;
     private Integer numRes;
-    private OrderedJSONObject result;
-    private JSONArray results;
+    private OrderedJSONObject responseResult;
+    private JSONArray searchResults;
     private static Logger logger = Logger.getLogger(GeocoderAPIVerticle.class);
 
     private void init() throws IOException, JSONException {
         geocodeWrapper = new GeocodeWrapper(config().getString("index.dir"));
+        reverseGeocodeWrapper = new ReverseGeocodeWrapper(config().getString("index.dir"));
         errorResponse = new JSONObject();
 
-        result = new OrderedJSONObject();
-        result.put("version", config().getString("api.version"));
+        responseResult = new OrderedJSONObject();
+        responseResult.put("version", config().getString("api.version"));
     }
 
     @Override
@@ -39,9 +43,11 @@ public class GeocoderAPIVerticle extends AbstractVerticle {
         HttpServer server = vertx.createHttpServer();
 
         Router router = Router.router(vertx);
-        Route route = router.route().path("/geocoder/v1/");
+        Route geocodingRoute = router.route().path("/geocoder/v1/");
+        Route reverseGeocodingRoute = router.route().path("/reverse-geocoder/v1/");
 
-        route.handler(routingContext -> {
+        geocodingRoute.handler(routingContext -> {
+            logger.info("GET geocoding");
             address = routingContext.request().getParam("address");
             numRes = Integer.parseInt(routingContext.request().getParam("n"));
             logger.info("address: " + address + " | " + "number of results: " + numRes);
@@ -50,12 +56,44 @@ public class GeocoderAPIVerticle extends AbstractVerticle {
             response.putHeader("content-type", "application/json");
 
             try {
-                results = geocodeWrapper.getSearchJSONArray(address, numRes);
-                result.put("input", address);
-                result.put("results", results);
+                searchResults = geocodeWrapper.getSearchJSONArray(address, numRes);
+                responseResult.put("input", address);
+                responseResult.put("results", searchResults);
 
                 response.end(
-                        result.toString(4)
+                        responseResult.toString(4)
+                );
+            } catch(Exception e){
+                try {
+                    errorResponse.put("error", e.toString());
+                } catch (JSONException ex) {
+                    ex.printStackTrace();
+                }
+                response.end(
+                        errorResponse.toString()
+                );
+            }
+
+        });
+
+        reverseGeocodingRoute.handler(routingContext -> {
+            logger.info("GET reverse geocoding");
+            ipLat = Double.parseDouble(routingContext.request().getParam("lat"));
+            ipLon = Double.parseDouble(routingContext.request().getParam("lon"));
+            radiusKM = Float.parseFloat(routingContext.request().getParam("radius"));
+            numRes = Integer.parseInt(routingContext.request().getParam("n"));
+            logger.info("lat: " + ipLat + " | " + "lon: " + ipLon + " | " + "radiusKM: " + radiusKM);
+
+            HttpServerResponse response = routingContext.response();
+            response.putHeader("content-type", "application/json");
+
+            try {
+                searchResults = reverseGeocodeWrapper.getSearchJSONArray(ipLat, ipLon, radiusKM, numRes);
+                responseResult.put("input", ipLat + ", " + ipLon);
+                responseResult.put("results", searchResults);
+
+                response.end(
+                        responseResult.toString(4)
                 );
             } catch(Exception e){
                 try {
