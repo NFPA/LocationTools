@@ -46,7 +46,7 @@ public class TigerIndexer {
     protected void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
-        int maxLevels = 5; //precision for geohash
+        int maxLevels = 11; //precision for geohash
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         this.strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
     }
