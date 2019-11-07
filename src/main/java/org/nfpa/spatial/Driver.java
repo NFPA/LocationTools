@@ -22,14 +22,19 @@ public class Driver {
                 TigerIndexer.main(new String[] {params[1]});
             }
             break;
-            case "--search":{
+            case "--geocode":{
                 logger.info("Searching.");
                 TigerGeocoder.main(new String[]{params[1], params[2], params[3]});
             }
             break;
-            case "--batch":{
+            case "--batch-geocode":{
                 logger.info("Batch Geocoding");
                 BatchGeocoder.main(new String[]{params[1], params[2], params[3], params[4], params[5]});
+            }
+            break;
+            case "--reverse-geocode":{
+                logger.info("Searching.");
+                TigerReverseGeocoder.main(new String[]{params[1], params[2], params[3], params[4], params[5]});
             }
             break;
         }
