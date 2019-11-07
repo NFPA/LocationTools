@@ -86,7 +86,7 @@ public class PostalQuery implements Serializable {
 
         hnoQueryBuilder.add(rAddQuery, BooleanClause.Occur.SHOULD);
         hnoQueryBuilder.add(lAddQuery, BooleanClause.Occur.SHOULD);
-        return new BoostQuery(hnoQueryBuilder.build(), Scores.HOUSE_NUMBER.getWeight());
+        return new BoostQuery(hnoQueryBuilder.build(), Scores.HOUSE_NUMBER.getWeight()/2);
     }
 
     private static Query addStreetClause(String street){
@@ -132,7 +132,7 @@ public class PostalQuery implements Serializable {
 
         zipQueryBuilder.add(ziplQuery, BooleanClause.Occur.SHOULD);
         zipQueryBuilder.add(ziprQuery, BooleanClause.Occur.SHOULD);
-        return new BoostQuery(zipQueryBuilder.build(), Scores.POSTCODE.getWeight());
+        return new BoostQuery(zipQueryBuilder.build(), Scores.POSTCODE.getWeight()/2);
     }
 
     private static Query addStateClause(String state){
