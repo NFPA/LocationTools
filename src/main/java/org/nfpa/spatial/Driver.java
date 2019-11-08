@@ -17,7 +17,7 @@ public class Driver {
             break;
             case "--index":{
                 logger.info("Indexing.");
-                TigerIndexer.main(new String[] {params[1]});
+                TigerIndexer.main(new String[] {params[1], params[2]});
             }
             break;
             case "--geocode":{

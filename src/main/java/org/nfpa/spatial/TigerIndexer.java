@@ -40,17 +40,21 @@ public class TigerIndexer {
     private ShapeReader shapeReader;
     private static IndexWriter indexWriter;
     private static FileSystem hdfs;
-    public static final String INDEX_DIRECTORY = "index";
+    private String INDEX_DIRECTORY = "index";
     private static Configuration hConf;
 
     private static Logger logger = Logger.getLogger(TigerIndexer.class);
 
-    protected void initGeoStuff(){
+    private void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
         int maxLevels = 8; //precision for geohash
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         this.strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
+    }
+
+    private void setIndexDirectory(String indexDir){
+        this.INDEX_DIRECTORY = indexDir;
     }
 
     private void initHadoop(){
@@ -173,11 +177,13 @@ public class TigerIndexer {
     }
 
     public static void main (String[] args) throws IOException {
+        String TIGER_PROCESSED = args[0];
+        String TIGER_INDEX = args[1];
+
         TigerIndexer tigerIndexer = new TigerIndexer();
         tigerIndexer.initGeoStuff();
         tigerIndexer.initHadoop();
-
-        String TIGER_PROCESSED = args[0];
+        tigerIndexer.setIndexDirectory(TIGER_INDEX);
 
         logger.info(TIGER_PROCESSED);
 
