@@ -55,7 +55,7 @@ public class TigerReverseGeocoder implements Serializable {
 
     private static void initGeoStuff() throws IOException {
         ctx = JtsSpatialContext.GEO;
-        int maxLevels = 5; //precision for geohash
+        int maxLevels = 8; //precision for geohash
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
     }
