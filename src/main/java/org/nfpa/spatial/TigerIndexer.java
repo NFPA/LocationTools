@@ -158,7 +158,7 @@ public class TigerIndexer {
     public static List<String> getAllFilePath(String baseDir) throws IOException {
         Path tigerProcessedPath = new Path(baseDir);
         hdfs = tigerProcessedPath.getFileSystem(hConf);
-        List<String> csvFiles = new ArrayList();
+        List<String> csvFiles = new ArrayList<String>();
         FileStatus[] fileStatuses = hdfs.listStatus(tigerProcessedPath);
         for (FileStatus fileStat : fileStatuses) {
             if (fileStat.isDirectory()) {
