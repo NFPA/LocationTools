@@ -11,27 +11,27 @@ public class Driver {
         String option = params[0];
         switch (option){
             case "--process":{
-                logger.info("Processing raw TIGER data.");
+                logger.info("Processing raw TIGER data...");
                 TigerProcessor.main(new String[] {params[1]});
             }
             break;
             case "--index":{
-                logger.info("Indexing.");
+                logger.info("Indexing...");
                 TigerIndexer.main(new String[] {params[1], params[2]});
             }
             break;
             case "--geocode":{
-                logger.info("Searching.");
+                logger.info("Searching...");
                 TigerGeocoder.main(new String[]{params[1], params[2], params[3]});
             }
             break;
             case "--batch-geocode":{
-                logger.info("Batch Geocoding");
+                logger.info("Batch Geocoding...");
                 BatchGeocoder.main(new String[]{params[1], params[2], params[3], params[4], params[5]});
             }
             break;
             case "--reverse-geocode":{
-                logger.info("Searching.");
+                logger.info("Searching...");
                 TigerReverseGeocoder.main(new String[]{params[1], params[2], params[3], params[4], params[5]});
             }
             break;

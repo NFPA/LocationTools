@@ -1,4 +1,4 @@
-package org.nfpa.spatial;
+package org.nfpa.spatial.utils;
 
 import org.apache.lucene.document.Document;
 import org.geotools.data.FeatureReader;
