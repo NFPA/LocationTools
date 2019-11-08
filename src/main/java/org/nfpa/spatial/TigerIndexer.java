@@ -108,12 +108,12 @@ public class TigerIndexer {
 
         Document doc = new Document();
 
-        int lAdd[] = {
+        int[] lAdd = {
                 Utils.parseToInt(record.get("LFROMADD"), -1),
                 Utils.parseToInt(record.get("LTOADD"), -1)
         };
 
-        int rAdd[] = {
+        int[] rAdd = {
                 Utils.parseToInt(record.get("RFROMADD"), -1),
                 Utils.parseToInt(record.get("RTOADD"), -1)
         };
