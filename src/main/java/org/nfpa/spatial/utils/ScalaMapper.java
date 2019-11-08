@@ -1,4 +1,4 @@
-package org.nfpa.spatial;
+package org.nfpa.spatial.utils;
 
 import java.util.HashMap;
 import scala.Predef;

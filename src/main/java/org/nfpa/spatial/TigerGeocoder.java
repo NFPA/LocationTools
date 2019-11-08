@@ -14,6 +14,9 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.wink.json4j.JSONException;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
+import org.nfpa.spatial.utils.CompositeQuery;
+import org.nfpa.spatial.utils.Interpolator;
+import org.nfpa.spatial.utils.PostalQuery;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;

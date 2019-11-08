@@ -3,13 +3,11 @@ package org.nfpa.spatial;
 import org.apache.wink.json4j.JSONArray;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
-import org.apache.wink.json4j.OrderedJSONObject;
 import org.locationtech.jts.io.ParseException;
+import org.nfpa.spatial.utils.ScalaMapper;
 import scala.collection.immutable.Map;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;

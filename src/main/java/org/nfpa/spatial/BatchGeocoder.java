@@ -111,7 +111,6 @@ public class BatchGeocoder {
 
         Dataset outputFrame = spark.createDataFrame(newRDD, DataTypes.createStructType(fields));
 
-//        outputFrame.show(20);
         outputFrame.createOrReplaceTempView("geocoded_output");
 
         String saveToTableQuery = readResource("saveToHive.sql");

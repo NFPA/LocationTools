@@ -1,4 +1,4 @@
-package org.nfpa.spatial;
+package org.nfpa.spatial.utils;
 
 import org.apache.lucene.search.Query;
 
@@ -13,7 +13,7 @@ public class CompositeQuery {
         this.inputFields  = new LinkedHashMap<>();
     }
 
-    HashMap<String, String> getHashMap(){
+    public HashMap<String, String> getHashMap(){
         return this.inputFields;
     }
 
@@ -21,11 +21,11 @@ public class CompositeQuery {
         this.inputFields.put(key, value);
     }
 
-    boolean containsInputField(String key){
+    public boolean containsInputField(String key){
         return this.inputFields.containsKey(key);
     }
 
-    String get(String key){
+    public String get(String key){
         return this.inputFields.get(key);
     }
 
@@ -33,7 +33,7 @@ public class CompositeQuery {
         this.query = query;
     }
 
-    Query getQuery(){
+    public Query getQuery(){
         return this.query;
     }
 

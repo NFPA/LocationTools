@@ -24,6 +24,8 @@ import org.locationtech.spatial4j.exception.InvalidShapeException;
 import org.locationtech.spatial4j.io.ShapeIO;
 import org.locationtech.spatial4j.io.ShapeReader;
 import org.locationtech.spatial4j.shape.Shape;
+import org.nfpa.spatial.utils.Utils;
+
 import java.io.*;
 import java.nio.file.Paths;
 import java.text.ParseException;
@@ -46,7 +48,7 @@ public class TigerIndexer {
     protected void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
-        int maxLevels = 11; //precision for geohash
+        int maxLevels = 8; //precision for geohash
         SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
         this.strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
     }
@@ -72,19 +74,6 @@ public class TigerIndexer {
     private void finishIndexer() throws IOException {
         indexWriter.commit();
         indexWriter.close();
-    }
-
-    static int parseToInt(String stringToParse, int defaultValue) {
-        int ret;
-        try
-        {
-            ret = Integer.parseInt(stringToParse);
-        }
-        catch(NumberFormatException ex)
-        {
-            ret = defaultValue; //Use default value if parsing failed
-        }
-        return ret;
     }
 
     private void indexFile(String filePath, IndexWriter indexWriter) throws InvalidShapeException, IOException, ParseException {
@@ -120,13 +109,13 @@ public class TigerIndexer {
         Document doc = new Document();
 
         int lAdd[] = {
-                parseToInt(record.get("LFROMADD"), -1),
-                parseToInt(record.get("LTOADD"), -1)
+                Utils.parseToInt(record.get("LFROMADD"), -1),
+                Utils.parseToInt(record.get("LTOADD"), -1)
         };
 
         int rAdd[] = {
-                parseToInt(record.get("RFROMADD"), -1),
-                parseToInt(record.get("RTOADD"), -1)
+                Utils.parseToInt(record.get("RFROMADD"), -1),
+                Utils.parseToInt(record.get("RTOADD"), -1)
         };
         Arrays.sort(lAdd); Arrays.sort(rAdd);
         doc.add(new IntRange("LADDRANGE", new int[] {lAdd[0]}, new int[] {lAdd[1]}));

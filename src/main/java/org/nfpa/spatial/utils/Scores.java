@@ -1,4 +1,4 @@
-package org.nfpa.spatial;
+package org.nfpa.spatial.utils;
 
 public enum Scores {
     HOUSE_NUMBER (5),

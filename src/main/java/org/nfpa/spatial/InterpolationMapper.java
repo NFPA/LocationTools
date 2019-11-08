@@ -19,16 +19,14 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.linearref.LengthIndexedLine;
+import org.nfpa.spatial.utils.Utils;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-
-import static org.nfpa.spatial.TigerIndexer.parseToInt;
 
 public class InterpolationMapper {
     private static WKTReader wktReader;
@@ -128,13 +126,13 @@ public class InterpolationMapper {
 
     private static int[] getAddressRange(Document doc){
         int fromAdd[] = {
-                parseToInt(doc.get("LFROMADD"), -1),
-                parseToInt(doc.get("RFROMADD"), -1)
+                Utils.parseToInt(doc.get("LFROMADD"), -1),
+                Utils.parseToInt(doc.get("RFROMADD"), -1)
         };
 
         int toAdd[] = {
-                parseToInt(doc.get("LTOADD"), -1),
-                parseToInt(doc.get("RTOADD"), -1)
+                Utils.parseToInt(doc.get("LTOADD"), -1),
+                Utils.parseToInt(doc.get("RTOADD"), -1)
         };
         Arrays.sort(fromAdd); Arrays.sort(toAdd);
 

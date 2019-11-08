@@ -4,6 +4,7 @@ import org.apache.wink.json4j.JSONArray;
 import org.apache.wink.json4j.JSONException;
 import org.apache.wink.json4j.JSONObject;
 import org.locationtech.jts.io.ParseException;
+import org.nfpa.spatial.utils.ScalaMapper;
 import scala.collection.immutable.Map;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.nfpa.spatial;
+package org.nfpa.spatial.utils;
 
 import com.mapzen.jpostal.AddressParser;
 import com.mapzen.jpostal.ParsedComponent;
@@ -13,7 +13,6 @@ import org.apache.lucene.search.spans.SpanQuery;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.nfpa.spatial.utils.Scores;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +31,7 @@ public class PostalQuery implements Serializable {
     private static JSONObject abbreviations;
     private static Logger logger = Logger.getLogger(PostalQuery.class);
 
-    PostalQuery() {
+    public PostalQuery() {
         initLibPostal();
         getAbbreviations();
     }
@@ -158,7 +157,7 @@ public class PostalQuery implements Serializable {
         return String.join(" ", elems);
     }
 
-    CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
+    public CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
         ParsedComponent[] parsedComponents = p.parseAddress(address);
         List<Query> queryComps = new ArrayList<>();

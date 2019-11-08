@@ -2,8 +2,6 @@ package org.nfpa.spatial;
 
 import org.apache.log4j.Logger;
 import org.apache.wink.json4j.JSONException;
-import org.json.simple.parser.ParseException;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
