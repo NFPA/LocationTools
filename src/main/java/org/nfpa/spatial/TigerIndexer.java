@@ -200,7 +200,5 @@ public class TigerIndexer {
             logger.info(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
         }
-        finally {
-        }
     }
 }
