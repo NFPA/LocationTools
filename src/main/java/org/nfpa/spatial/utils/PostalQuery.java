@@ -13,6 +13,7 @@ import org.apache.lucene.search.spans.SpanQuery;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.nfpa.spatial.utils.Scores;
 
 import java.io.IOException;
 import java.io.InputStream;

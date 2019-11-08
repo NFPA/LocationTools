@@ -14,7 +14,7 @@ import org.apache.wink.json4j.OrderedJSONObject;
 
 import java.io.IOException;
 
-public class GeocoderAPIVerticle extends AbstractVerticle {
+public class APIVerticle extends AbstractVerticle {
 
     private GeocodeWrapper geocodeWrapper;
     private ReverseGeocodeWrapper reverseGeocodeWrapper;
@@ -25,7 +25,7 @@ public class GeocoderAPIVerticle extends AbstractVerticle {
     private Integer numRes;
     private OrderedJSONObject responseResult;
     private JSONArray searchResults;
-    private static Logger logger = Logger.getLogger(GeocoderAPIVerticle.class);
+    private static Logger logger = Logger.getLogger(APIVerticle.class);
 
     private void init() throws IOException, JSONException {
         geocodeWrapper = new GeocodeWrapper(config().getString("index.dir"));

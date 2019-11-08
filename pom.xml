@@ -20,7 +20,7 @@
         <scala.version>2.11</scala.version>
         <spark.compatible.verison>2.3</spark.compatible.verison>
 
-        <main.verticle>org.nfpa.spatial.GeocoderAPIVerticle</main.verticle>
+        <main.verticle>org.nfpa.spatial.APIVerticle</main.verticle>
         <vertex.version>3.8.2</vertex.version>
     </properties>
 
