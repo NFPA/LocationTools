@@ -182,7 +182,6 @@ public class TigerIndexer {
         logger.info(TIGER_PROCESSED);
 
         List<String> csvFiles = getAllFilePath(TIGER_PROCESSED);
-        logger.info(csvFiles);
 
         try {
             tigerIndexer.initIndexer();
