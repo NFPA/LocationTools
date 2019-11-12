@@ -109,6 +109,7 @@ public class TigerGeocoder implements Serializable {
             doc = indexSearcher.doc(topDocs.scoreDocs[i].doc);
             resultHMap = getJSONFromDoc(doc, compositeQuery);
             resultHMap.put("SEARCH_SCORE", "" + topDocs.scoreDocs[i].score);
+            resultHMap.put("ADDRESS_SCORE", "" + compositeQuery.getAddressScore());
             resultHMap.putAll(compositeQuery.getHashMap());
             results.add(resultHMap);
         }

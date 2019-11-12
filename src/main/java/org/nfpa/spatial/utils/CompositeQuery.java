@@ -7,10 +7,19 @@ import java.util.LinkedHashMap;
 
 public class CompositeQuery {
     private Query query;
+    private float addressScore = 0;
     private LinkedHashMap<String, String> inputFields;
 
     CompositeQuery(){
         this.inputFields  = new LinkedHashMap<>();
+    }
+
+    public void addToScore(float score){
+        this.addressScore += score;
+    }
+
+    public float getAddressScore(){
+        return this.addressScore;
     }
 
     public HashMap<String, String> getHashMap(){

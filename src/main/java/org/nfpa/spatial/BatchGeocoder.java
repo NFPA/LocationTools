@@ -15,6 +15,7 @@ import org.apache.spark.sql.types.StructField;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
 import scala.collection.immutable.Map;
+import scala.collection.mutable.Seq;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,30 +67,35 @@ public class BatchGeocoder {
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
-                .option("header", false)
+                .option("header", true)
                 .load(csvPath)
                 .sample(fraction)
                 .repartition(nPartitions);
 
+        inputDataFrame.createOrReplaceTempView("input_data");
 
-        int addressIndex, joinKeyIndex;
-        if(inputDataFrame.columns().length == 1){
-            addressIndex = 0; joinKeyIndex = -1;
-        } else {
-            addressIndex = 1; joinKeyIndex = 0;
+        int addressIndex = 0, joinKeyIndex=-1;
+        try{
+            addressIndex = inputDataFrame.schema().fieldIndex("address");
+            joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
+        } catch (IllegalArgumentException e){
+            logger.error("address and join_key must be in header");
+            throw e;
         }
 
-        JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
+        int finalJoinKeyIndex = joinKeyIndex;
+        int finalAddressIndex = addressIndex;
 
+        JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
         JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
             List<Row> outputRows = new ArrayList<Row>();
-            Map[] result; String joinKey, address;
+            Map[] result; String joinKey, address; Row currentRow;
             while(iterator.hasNext()){
-                Row row = iterator.next();
-                address = row.getString(addressIndex);
-                joinKey = joinKeyIndex > -1 ?
-                        row.getString(joinKeyIndex) : "" + address.hashCode();
+                currentRow = iterator.next();
+                address = currentRow.getString(finalAddressIndex);
+                joinKey = finalJoinKeyIndex > -1 ?
+                        currentRow.getString(finalJoinKeyIndex) : "" + address.hashCode();
                 result = geocodeWrapper.getSearchMap(address, 2);
 
                 outputRows.add(
@@ -104,9 +110,9 @@ public class BatchGeocoder {
         );
 
         StructField[] fields = new StructField[]{
-                DataTypes.createStructField("join_key", DataTypes.StringType, false),
-                DataTypes.createStructField("address", DataTypes.StringType, true),
-                DataTypes.createStructField("address_output", searchResultsType, false)
+                DataTypes.createStructField("geocoder_join_key", DataTypes.StringType, false),
+                DataTypes.createStructField("geocoder_address", DataTypes.StringType, true),
+                DataTypes.createStructField("geocoder_address_output", searchResultsType, false)
         };
 
         Dataset outputFrame = spark.createDataFrame(newRDD, DataTypes.createStructType(fields));

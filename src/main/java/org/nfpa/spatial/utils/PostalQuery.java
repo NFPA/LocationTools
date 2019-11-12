@@ -66,14 +66,14 @@ public class PostalQuery implements Serializable {
 
         libPostalMap.forEach((k, v) -> {
             try {
-                methodMap.put(k, PostalQuery.class.getDeclaredMethod(v, String.class));
+                methodMap.put(k, PostalQuery.class.getDeclaredMethod(v, String.class, CompositeQuery.class));
             } catch (NoSuchMethodException e) {
                 logger.warn(e.toString());
             }
         });
     }
 
-    private static Query addHouseClause(String houseNumber){
+    private static Query addHouseClause(String houseNumber, CompositeQuery compositeQuery){
         int hno;
         try {
             hno = Integer.parseInt(houseNumber);
@@ -86,10 +86,11 @@ public class PostalQuery implements Serializable {
 
         hnoQueryBuilder.add(rAddQuery, BooleanClause.Occur.SHOULD);
         hnoQueryBuilder.add(lAddQuery, BooleanClause.Occur.SHOULD);
+        compositeQuery.addToScore(Scores.HOUSE_NUMBER.getWeight());
         return new BoostQuery(hnoQueryBuilder.build(), Scores.HOUSE_NUMBER.getWeight()/2);
     }
 
-    private static Query addStreetClause(String street){
+    private static Query addStreetClause(String street, CompositeQuery compositeQuery){
         BooleanQuery.Builder streetQueryBuilder = new BooleanQuery.Builder();
 
         String[] elems = street.split("\\s+");
@@ -104,10 +105,12 @@ public class PostalQuery implements Serializable {
         } else {
             streetQueryBuilder.add(new FuzzyQuery(new Term("FULLNAME", street), 2), BooleanClause.Occur.SHOULD);
         }
+
+        compositeQuery.addToScore(Scores.ROAD.getWeight());
         return new BoostQuery(streetQueryBuilder.build(), Scores.ROAD.getWeight());
     }
 
-    private static Query addCityClause(String city){
+    private static Query addCityClause(String city, CompositeQuery compositeQuery){
         BooleanQuery.Builder cityQueryBuilder = new BooleanQuery.Builder();
 
         String[] elems = city.split("\\s+");
@@ -122,26 +125,32 @@ public class PostalQuery implements Serializable {
         } else {
             cityQueryBuilder.add(new FuzzyQuery(new Term("PLACE", city), 2), BooleanClause.Occur.MUST);
         }
+
+        compositeQuery.addToScore(Scores.CITY.getWeight());
         return new BoostQuery(cityQueryBuilder.build(), Scores.CITY.getWeight());
     }
 
-    private static Query addZipClause(String zip){
+    private static Query addZipClause(String zip, CompositeQuery compositeQuery){
         Query ziplQuery = new TermQuery(new Term("ZIPL", zip));
         Query ziprQuery = new TermQuery(new Term("ZIPR", zip));
         BooleanQuery.Builder zipQueryBuilder = new BooleanQuery.Builder();
 
         zipQueryBuilder.add(ziplQuery, BooleanClause.Occur.SHOULD);
         zipQueryBuilder.add(ziprQuery, BooleanClause.Occur.SHOULD);
+
+        compositeQuery.addToScore(Scores.POSTCODE.getWeight());
         return new BoostQuery(zipQueryBuilder.build(), Scores.POSTCODE.getWeight()/2);
     }
 
-    private static Query addStateClause(String state){
+    private static Query addStateClause(String state, CompositeQuery compositeQuery){
         Query stuspsQuery = new TermQuery(new Term("STUSPS", state));
         Query stNameQuery = new TermQuery(new Term("NAME", state));
         BooleanQuery.Builder stateQueryBuilder = new BooleanQuery.Builder();
 
         stateQueryBuilder.add(stuspsQuery, BooleanClause.Occur.SHOULD);
         stateQueryBuilder.add(stNameQuery, BooleanClause.Occur.SHOULD);
+
+        compositeQuery.addToScore(Scores.STATE.getWeight());
         return new BoostQuery(stateQueryBuilder.build(), Scores.STATE.getWeight());
     }
 
@@ -171,7 +180,7 @@ public class PostalQuery implements Serializable {
             value = replaceWithAbbrev(comp.getValue());
             compositeQuery.addInputField("ip_postal_" + label, value);
             if (methodMap.containsKey(label)) {
-                Object[] parameters = {value};
+                Object[] parameters = {value, compositeQuery};
                 queryComps.add((Query) methodMap.get(label).invoke(null, parameters));
             }
         }
