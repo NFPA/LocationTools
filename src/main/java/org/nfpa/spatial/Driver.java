@@ -10,6 +10,11 @@ public class Driver {
     public static void main(String... params) throws IOException, JSONException, InvocationTargetException, IllegalAccessException, org.locationtech.jts.io.ParseException {
         String option = params[0];
         switch (option){
+            case "--download":{
+                logger.info("Processing raw TIGER data...");
+                TigerDownloader.main(new String[] {});
+            }
+            break;
             case "--process":{
                 logger.info("Processing raw TIGER data...");
                 TigerProcessor.main(new String[] {params[1]});
