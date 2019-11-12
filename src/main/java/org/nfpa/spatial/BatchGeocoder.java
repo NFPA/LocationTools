@@ -15,7 +15,6 @@ import org.apache.spark.sql.types.StructField;
 import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator;
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator;
 import scala.collection.immutable.Map;
-import scala.collection.mutable.Seq;
 
 import java.io.IOException;
 import java.io.InputStream;
