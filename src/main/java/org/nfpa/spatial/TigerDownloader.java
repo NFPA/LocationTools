@@ -77,6 +77,8 @@ public class TigerDownloader {
         logger.info("All files directories: " + subDirectories);
         logger.info("Filter files directories: " +filterDirectories);
 
+        boolean toDownload = false;
+
         for (String directory: subDirectories){
             ftp.changeWorkingDirectory(TIGER_BASE_DIR);
             ftp.changeWorkingDirectory(directory);
@@ -85,14 +87,10 @@ public class TigerDownloader {
             for (FTPFile file: files){
                 String fileName = file.getName();
                 if (filterDirectories.contains(directory)){
-                    if (isValidStateFile(fileName)){
-                        logger.info("DOWNLOADING: " + fileName + " SIZE: " + file.getSize()/1024 + "KB");
-                        downloadRemoteFile(fileName, directory);
-                        logger.info("Unzipping: " + fileName);
-                        unzipFile(fileName, directory);
-                    }
+                    if (isValidStateFile(fileName)) toDownload = true;
                 }
-                else {
+                else toDownload = true;
+                if (toDownload){
                     logger.info("DOWNLOADING: " + fileName + " SIZE: " + file.getSize()/1024 + "KB");
                     downloadRemoteFile(fileName, directory);
                     logger.info("Unzipping: " + fileName);
