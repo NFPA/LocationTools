@@ -181,6 +181,12 @@
             <version>1.1.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>net.lingala.zip4j</groupId>
+            <artifactId>zip4j</artifactId>
+            <version>2.2.4</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.wink/wink-json4j -->
         <dependency>
             <groupId>org.apache.wink</groupId>
