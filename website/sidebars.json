@@ -1,0 +1,10 @@
+{
+  "docs": {
+    "Getting Started": ["GetStart","BuildIndex","SearchAddress" ],
+    "Configurations": ["APIConfig"],
+    "Comparison Statistics": ["CompareStats"]
+  },
+  "docs-other": {
+    "First Category": ["doc4", "doc5"]
+  }
+}
