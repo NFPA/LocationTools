@@ -29,6 +29,10 @@ public class TigerProcessor {
     private static Configuration hConf;
     private static Logger logger = Logger.getLogger("TigerProcessor");
 
+    TigerProcessor(){
+        initHadoop();
+    }
+
     private void initSpark(){
         SparkConf conf = new SparkConf()
                 .setAppName("TigerProcessor")
@@ -123,19 +127,16 @@ public class TigerProcessor {
         return filteredDirectories;
     }
 
-    public static void main(String[] args) throws IOException {
-        String TIGER_BASE = args[0];
-
-        initHadoop();
-        String query;
+    public static void process(String TIGER_BASE, String TIGER_PROCESSED) throws IOException {
 
         HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));
+
+        Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
 
         for (String state :availableStates){
             TigerProcessor processor = new TigerProcessor();
             processor.initSpark();
-            query = processor.readResource("tigerJoin.sql");
-            Dataset countyDF, placeDF, stateDF,  edgesDF, facesDF, joinedData;
+            String query = processor.readResource("tigerJoin.sql");
 
             countyDF = processor.readDF(TIGER_BASE, "county", "ALL");
             placeDF = processor.readDF(TIGER_BASE, "place", "ALL");
@@ -164,7 +165,7 @@ public class TigerProcessor {
                     .option("header", true)
                     .option("delimiter", "\t")
                     .option("quote", "\u0000")
-                    .csv(TIGER_BASE + "processed/" + state);
+                    .csv(TIGER_PROCESSED + state);
             spark.stop();
             spark.close();
             jsc.stop();

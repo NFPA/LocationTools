@@ -36,21 +36,6 @@ public class PostalQuery implements Serializable {
         getAbbreviations();
     }
 
-    private void getAbbreviations() {
-        InputStream in;
-        in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
-        JSONParser jsonParser = new JSONParser();
-        try {
-            abbreviations = (JSONObject) jsonParser.parse(IOUtils.toString(in));
-        } catch (IOException ioe){
-            logger.error("Error reading abbreviations.json");
-            logger.error(ioe);
-        } catch (ParseException pe){
-            logger.error("Error parsing abbreviations.json");
-            logger.error(pe);
-        }
-    }
-
     private void initLibPostal() {
         logger.info("java.library.path " + System.getProperty("java.library.path"));
 
@@ -71,6 +56,21 @@ public class PostalQuery implements Serializable {
                 logger.warn(e.toString());
             }
         });
+    }
+
+    private void getAbbreviations() {
+        InputStream in;
+        in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
+        JSONParser jsonParser = new JSONParser();
+        try {
+            abbreviations = (JSONObject) jsonParser.parse(IOUtils.toString(in));
+        } catch (IOException ioe){
+            logger.error("IO Error reading abbreviations.json");
+            logger.error(ioe);
+        } catch (ParseException pe){
+            logger.error("Error parsing abbreviations.json");
+            logger.error(pe);
+        }
     }
 
     private static Query addHouseClause(String houseNumber, CompositeQuery compositeQuery){

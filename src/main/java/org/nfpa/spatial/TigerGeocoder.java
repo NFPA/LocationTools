@@ -26,9 +26,9 @@ import java.util.*;
 public class TigerGeocoder implements Serializable {
     private static Directory directory;
     private static Interpolator interpolator;
-    private static PostalQuery postalQuery;
     private static Query searchQuery;
     private static FileSystem hdfs;
+    private PostalQuery postalQuery;
 
     private static final String IP_HOUSE_FIELD = "ip_postal_house_number";
 
@@ -38,7 +38,6 @@ public class TigerGeocoder implements Serializable {
     private static String INDEX_DIRECTORY;
     private static Configuration hConf;
     private static IndexSearcher indexSearcher;
-
 
     void init() throws IOException {
         this.initHadoop();

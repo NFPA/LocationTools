@@ -8,6 +8,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.ArrayType;
 import org.apache.spark.sql.types.DataTypes;
@@ -31,12 +32,12 @@ public class BatchGeocoder {
     private static Configuration hConf;
     private static Logger logger = Logger.getLogger("BatchGeocoder");
 
-    private void initSpark(){
+    void initSpark(){
         SparkConf conf = new SparkConf()
                 .setAppName("BatchGeocoder");
 //                .setAppName("BatchGeocoder")
 //                .setMaster("local");
-        conf.set("spark.serializer", org.apache.spark.serializer.KryoSerializer.class.getName());
+        conf.set("spark.serializer", KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
         spark = SparkSession.builder().config(conf).getOrCreate();
@@ -46,7 +47,7 @@ public class BatchGeocoder {
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
-    private void initHadoop(){
+    void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -61,7 +62,9 @@ public class BatchGeocoder {
         return IOUtils.toString(in);
     }
 
-    private void batchGeocode(String csvPath, String indexDir, String outputPath, int nPartitions, float fraction) throws IOException {
+    void batchGeocode(String csvPath, String indexDir, String outputPath,
+                      int nPartitions, int numResults, float fraction) throws IOException {
+
         Dataset<Row> inputDataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
@@ -95,7 +98,7 @@ public class BatchGeocoder {
                 address = currentRow.getString(finalAddressIndex);
                 joinKey = finalJoinKeyIndex > -1 ?
                         currentRow.getString(finalJoinKeyIndex) : "" + address.hashCode();
-                result = geocodeWrapper.getSearchMap(address, 2);
+                result = geocodeWrapper.getSearchMap(address, numResults);
 
                 outputRows.add(
                         RowFactory.create(joinKey, address, result)
@@ -136,10 +139,11 @@ public class BatchGeocoder {
         String indexPath = args[1];
         String outputPath = args[2];
         int partitions = Integer.parseInt(args[3]);
-        float fraction = Float.parseFloat(args[4]);
+        int numResults = Integer.parseInt(args[4]);
+        float fraction = Float.parseFloat(args[5]);
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions, fraction);
+        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions, numResults, fraction);
     }
 }

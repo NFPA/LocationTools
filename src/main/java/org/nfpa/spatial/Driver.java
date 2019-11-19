@@ -5,20 +5,24 @@ import org.apache.commons.configuration.INIConfiguration;
 import org.apache.log4j.Logger;
 import org.apache.wink.json4j.JSONException;
 import org.locationtech.jts.io.ParseException;
+import org.nfpa.spatial.utils.Utils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.List;
 
 public class Driver {
     private static Logger logger = Logger.getLogger(Driver.class);
-    public static void main(String... params) throws IOException, JSONException, InvocationTargetException, IllegalAccessException, ParseException, ConfigurationException {
+
+    public static void main(String... params) throws IOException, JSONException,
+            InvocationTargetException, IllegalAccessException, ParseException,
+            ConfigurationException, NoSuchFieldException {
+
         String option = params[0];
         String configPath = params[1];
 
         INIConfiguration config = new INIConfiguration(configPath);
-
-        logger.info(config.getString("global.AppName"));
 
         switch (option){
             case "--download":{
@@ -39,18 +43,26 @@ public class Driver {
                 logger.info("TIGER_FILTER_TYPES: " + TIGER_FILTER_TYPES);
 
 
-                new TigerDownloader().download(TIGER_DOWNLOAD_DIR, TIGER_BASE_DIR, TIGER_FTP,
-                        TIGER_STATES, TIGER_TYPES, TIGER_FILTER_TYPES);
+                new TigerDownloader().download(
+                        TIGER_DOWNLOAD_DIR,
+                        TIGER_BASE_DIR,
+                        TIGER_FTP,
+                        TIGER_STATES,
+                        TIGER_TYPES,
+                        TIGER_FILTER_TYPES
+                );
             }
             break;
             case "--process":{
                 logger.info("Processing raw TIGER data...");
 
                 String TIGER_UNCOMPRESSED_DIR = config.getString("process.uncompressed.dir");
+                String TIGER_PROCESSED_DIR = config.getString("process.processed.dir");
 
                 logger.info("TIGER_UNCOMPRESSED_DIR: " + TIGER_UNCOMPRESSED_DIR);
 
-                TigerProcessor.main(new String[] {TIGER_UNCOMPRESSED_DIR});
+                TigerProcessor processor = new TigerProcessor();
+                processor.process(TIGER_UNCOMPRESSED_DIR, TIGER_PROCESSED_DIR);
             }
             break;
             case "--index":{
@@ -62,12 +74,30 @@ public class Driver {
                 logger.info("TIGER_PROCESSED_DIR: " + TIGER_PROCESSED_DIR);
                 logger.info("INDEX_OUTPUT_DIR: " + INDEX_OUTPUT_DIR);
 
-                TigerIndexer.main(new String[] {TIGER_PROCESSED_DIR, INDEX_OUTPUT_DIR});
+                TigerIndexer tigerIndexer = new TigerIndexer();
+                tigerIndexer.setIndexDirectory(INDEX_OUTPUT_DIR);
+                tigerIndexer.startIndexing(TIGER_PROCESSED_DIR);
             }
             break;
             case "--geocode":{
                 logger.info("Searching...");
-                TigerGeocoder.main(new String[]{params[1], params[2], params[3]});
+
+                String LIBPOSTAL_PATH = config.getString("runtime.libpostal.so.path");
+                logger.info(LIBPOSTAL_PATH);
+                Utils.loadLibPostal(LIBPOSTAL_PATH);
+
+                String LUCENE_INDEX_DIR = config.getString("geocode.lucene.index.dir");
+                String INPUT_ADDRESS = config.getString("geocode.input.address");
+                Integer NUM_RESULTS = config.getInt("geocode.num.results", 1);
+
+                logger.info("LUCENE_INDEX_DIR: " + LUCENE_INDEX_DIR);
+                logger.info("INPUT_ADDRESS: " + INPUT_ADDRESS);
+                logger.info("NUM_RESULTS: " + NUM_RESULTS);
+
+                TigerGeocoder tigerGeocoder = new TigerGeocoder();
+                tigerGeocoder.setIndexDirectory(LUCENE_INDEX_DIR);
+                tigerGeocoder.init();
+                logger.info(tigerGeocoder.search(INPUT_ADDRESS, NUM_RESULTS));
             }
             break;
             case "--batch-geocode":{
@@ -76,9 +106,9 @@ public class Driver {
                 String INPUT_DIR = config.getString("batch-geocode.input.dir");
                 String LUCENE_INDEX_DIR = config.getString("batch-geocode.lucene.index.dir");
                 String HIVE_OUTPUT_TABLE = config.getString("batch-geocode.hive.output.table");
-                String NUM_PARTITIONS = config.getString("batch-geocode.num.partitions");
-                String NUM_RESULTS = config.getString("batch-geocode.num.results");
-                String INPUT_FRACTION = config.getString("batch-geocode.input.fraction");
+                Integer NUM_PARTITIONS = config.getInteger("batch-geocode.num.partitions", 100);
+                Integer NUM_RESULTS = config.getInteger("batch-geocode.num.results", 1);
+                Float INPUT_FRACTION = config.getFloat("batch-geocode.input.fraction");
 
                 logger.info("INPUT_DIR: " + INPUT_DIR);
                 logger.info("LUCENE_INDEX_DIR: " + LUCENE_INDEX_DIR);
@@ -87,17 +117,27 @@ public class Driver {
                 logger.info("NUM_RESULTS: " + NUM_RESULTS);
                 logger.info("INPUT_FRACTION: " + INPUT_FRACTION);
 
-                BatchGeocoder.main(new String[]{INPUT_DIR, LUCENE_INDEX_DIR, HIVE_OUTPUT_TABLE, NUM_PARTITIONS, INPUT_FRACTION});
+                BatchGeocoder batchGeocoder = new BatchGeocoder();
+                batchGeocoder.initSpark();
+                batchGeocoder.initHadoop();
+                batchGeocoder.batchGeocode(
+                        INPUT_DIR,
+                        LUCENE_INDEX_DIR,
+                        HIVE_OUTPUT_TABLE,
+                        NUM_PARTITIONS,
+                        NUM_RESULTS,
+                        INPUT_FRACTION
+                );
             }
             break;
             case "--reverse-geocode":{
                 logger.info("Searching...");
 
                 String LUCENE_INDEX_DIR = config.getString("reverse-geocode.lucene.index.dir");
-                String IP_LAT = config.getString("reverse-geocode.ip.lat");
-                String IP_LON = config.getString("reverse-geocode.ip.lon");
-                String RADIUS_KM = config.getString("reverse-geocode.radius.km");
-                String NUM_RESULTS = config.getString("reverse-geocode.num.results");
+                Double IP_LAT = config.getDouble("reverse-geocode.ip.lat");
+                Double IP_LON = config.getDouble("reverse-geocode.ip.lon");
+                Float RADIUS_KM = config.getFloat("reverse-geocode.radius.km", 1.0F);
+                Integer NUM_RESULTS = config.getInteger("reverse-geocode.num.results", 1);
 
                 logger.info("LUCENE_INDEX_DIR: " + LUCENE_INDEX_DIR);
                 logger.info("IP_LAT: " + IP_LAT);
@@ -105,7 +145,10 @@ public class Driver {
                 logger.info("RADIUS_KM: " + RADIUS_KM);
                 logger.info("NUM_RESULTS: " + NUM_RESULTS);
 
-                TigerReverseGeocoder.main(new String[]{LUCENE_INDEX_DIR, IP_LAT, IP_LON, RADIUS_KM, NUM_RESULTS});
+                TigerReverseGeocoder reverseGeocoder = new TigerReverseGeocoder();
+                reverseGeocoder.setIndexDirectory(LUCENE_INDEX_DIR);
+                reverseGeocoder.init();
+                logger.info(reverseGeocoder.spatialSearch(IP_LAT, IP_LON, RADIUS_KM, NUM_RESULTS));
             }
             break;
         }

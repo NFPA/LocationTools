@@ -45,7 +45,12 @@ public class TigerIndexer {
 
     private static Logger logger = Logger.getLogger(TigerIndexer.class);
 
-    private void initGeoStuff(){
+    TigerIndexer(){
+        initGeoStuff();
+        initHadoop();
+    }
+
+    void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
         int maxLevels = 8; //precision for geohash
@@ -53,11 +58,11 @@ public class TigerIndexer {
         this.strategy = new RecursivePrefixTreeStrategy(grid, "GEOMETRY");
     }
 
-    private void setIndexDirectory(String indexDir){
+    void setIndexDirectory(String indexDir){
         this.INDEX_DIRECTORY = indexDir;
     }
 
-    private void initHadoop(){
+    void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
                 org.apache.hadoop.hdfs.DistributedFileSystem.class.getName()
@@ -159,7 +164,7 @@ public class TigerIndexer {
         return csvFiles;
     }
 
-    public static List<String> getAllFilePath(String baseDir) throws IOException {
+    private static List<String> getAllFilePath(String baseDir) throws IOException {
         Path tigerProcessedPath = new Path(baseDir);
         hdfs = tigerProcessedPath.getFileSystem(hConf);
         List<String> csvFiles = new ArrayList<String>();
@@ -176,6 +181,22 @@ public class TigerIndexer {
         return csvFiles;
     }
 
+    void startIndexing(String tigerProcessedDir) throws IOException {
+        List<String> csvFiles = getAllFilePath(tigerProcessedDir);
+
+        try {
+            initIndexer();
+            for (String csvFile : csvFiles ){
+                indexFile(csvFile, indexWriter);
+            }
+            finishIndexer();
+        }
+        catch (Exception e){
+            logger.info(Arrays.toString(e.getStackTrace()));
+            e.printStackTrace();
+        }
+    }
+
     public static void main (String[] args) throws IOException {
         String TIGER_PROCESSED = args[0];
         String TIGER_INDEX = args[1];
@@ -184,21 +205,6 @@ public class TigerIndexer {
         tigerIndexer.initGeoStuff();
         tigerIndexer.initHadoop();
         tigerIndexer.setIndexDirectory(TIGER_INDEX);
-
-        logger.info(TIGER_PROCESSED);
-
-        List<String> csvFiles = getAllFilePath(TIGER_PROCESSED);
-
-        try {
-            tigerIndexer.initIndexer();
-            for (String csvFile : csvFiles ){
-                tigerIndexer.indexFile(csvFile, indexWriter);
-            }
-            tigerIndexer.finishIndexer();
-        }
-        catch (Exception e){
-            logger.info(Arrays.toString(e.getStackTrace()));
-            e.printStackTrace();
-        }
+        tigerIndexer.startIndexing(TIGER_PROCESSED);
     }
 }
