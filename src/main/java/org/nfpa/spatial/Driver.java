@@ -31,9 +31,9 @@ public class Driver {
                 String TIGER_DOWNLOAD_DIR = config.getString("download.download.dir");
                 String TIGER_BASE_DIR = config.getString("download.base.dir");
                 String TIGER_FTP = config.getString("download.ftp");
-                List<String> TIGER_STATES = config.getList("download.states");
-                List<String> TIGER_TYPES = config.getList("download.types");
-                List<String> TIGER_FILTER_TYPES = config.getList("download.filter.types");
+                List TIGER_STATES = config.getList("download.states");
+                List TIGER_TYPES = config.getList("download.types");
+                List TIGER_FILTER_TYPES = config.getList("download.filter.types");
 
                 logger.info("TIGER_DOWNLOAD_DIR: " + TIGER_DOWNLOAD_DIR);
                 logger.info("TIGER_BASE_DIR: " + TIGER_BASE_DIR);
