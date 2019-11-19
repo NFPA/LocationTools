@@ -11,30 +11,18 @@ import java.util.*;
 public class TigerDownloader {
     private FTPClient ftp;
     private FTPClientConfig ftpConfig;
-    private Properties properties;
     private HashSet<String> statesFIPS = new HashSet<String>();
     private static Logger logger = Logger.getLogger(TigerDownloader.class);
 
     private static String TIGER_DOWNLOAD_DIR;
     private static String TIGER_BASE_DIR;
     private static String TIGER_FTP;
-    private static String TIGER_STATES;
-    private static String TIGER_TYPES;
-    private static String TIGER_FILTER_TYPES;
+    private static List<String> TIGER_STATES;
+    private static List<String> TIGER_TYPES;
+    private static List<String> TIGER_FILTER_TYPES;
 
     private void readProperties() throws IOException {
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("tiger.properties");
-        properties = new Properties();
-        properties.load(in);
-
-        TIGER_DOWNLOAD_DIR = properties.getProperty("tiger.download.dir");
-        TIGER_BASE_DIR = properties.getProperty("tiger.base.dir");
-        TIGER_FTP = properties.getProperty("tiger.ftp");
-        TIGER_STATES = properties.getProperty("tiger.states");
-        TIGER_TYPES = properties.getProperty("tiger.types");
-        TIGER_FILTER_TYPES = properties.getProperty("tiger.filter.types");
-
-        for (String state : TIGER_STATES.split(",")){
+        for (String state : TIGER_STATES){
             statesFIPS.add(StateFIPS.getFIPS(state.trim()));
         }
         logger.info(statesFIPS);
@@ -68,7 +56,7 @@ public class TigerDownloader {
         ftpConfig = new FTPClientConfig();
     }
 
-    private void downloadData() throws IOException {
+    private void downloadTIGERData() throws IOException {
         new File(TIGER_DOWNLOAD_DIR).mkdirs();
 
         HashSet<String> subDirectories = getDownloadDirectories();
@@ -127,7 +115,7 @@ public class TigerDownloader {
 
     private HashSet<String> getDownloadDirectories(){
         HashSet<String> subDirectories = new HashSet<String>();
-        for (String directory : TIGER_TYPES.split(",")){
+        for (String directory : TIGER_TYPES){
             subDirectories.add(directory.trim());
         };
         return subDirectories;
@@ -135,17 +123,27 @@ public class TigerDownloader {
 
     private HashSet<String> getFilterDirectories(){
         HashSet<String> filterDirectories = new HashSet<String>();
-        for (String directory : TIGER_FILTER_TYPES.split(",")){
+        for (String directory : TIGER_FILTER_TYPES){
             filterDirectories.add(directory.trim());
         };
         return filterDirectories;
     }
 
-    public static void main(String[] args) throws IOException {
-        TigerDownloader downloader = new TigerDownloader();
-        downloader.readProperties();
-        downloader.initFTPConfig();
-        downloader.initFTPClient();
-        downloader.downloadData();
+    public void download(String tigerDownloadDir, String tigerBaseDir, String tigerFTP,
+                         List<String> tigerStates, List<String> tigerTypes, List<String> tigerFilterTypes) throws IOException {
+        TIGER_DOWNLOAD_DIR = tigerDownloadDir;
+        TIGER_BASE_DIR = tigerBaseDir;
+        TIGER_FTP = tigerFTP;
+        TIGER_STATES = tigerStates;
+        TIGER_TYPES = tigerTypes;
+        TIGER_FILTER_TYPES = tigerFilterTypes;
+        readProperties();
+        initFTPConfig();
+        initFTPClient();
+        downloadTIGERData();
+    }
+
+    public static void main(String[] args) {
+        logger.info("Use download method with config instead of main");
     }
 }
