@@ -18,6 +18,8 @@ COPY target/location-tools-1.0-SNAPSHOT.jar /usr/src/location-tools-1.0-SNAPSHOT
 COPY docker-driver.ini /usr/src/docker-driver.ini
 COPY src/conf/vertx-docker-conf.json /usr/src/conf/vertx-docker-conf.json
 ADD jniLibs /usr/src/jniLibs
+
+# Change the location of lucene index
 ADD TIGER_RAW/index /usr/src/index
 
 COPY onstart-docker.sh /usr/src/onstart-docker.sh
