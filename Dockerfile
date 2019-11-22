@@ -26,7 +26,7 @@ RUN ["mv", "/jpostal/src/main/jniLibs", "/usr/src/jniLibs"]
 
 # Copy jars and config files
 COPY target/location-tools-1.0-SNAPSHOT.jar /usr/src/location-tools-1.0-SNAPSHOT.jar
-COPY src/conf/vertx-docker-conf.json /usr/src/conf/vertx-docker-conf.json
+COPY vertx-docker-conf.json /usr/src/conf/vertx-docker-conf.json
 
 # Change the location of lucene index
 ADD TIGER_RAW/index /usr/src/index
