@@ -62,7 +62,7 @@ public class BatchGeocoder {
         return IOUtils.toString(in);
     }
 
-    void batchGeocode(String csvPath, String indexDir, String outputPath,
+    void batchGeocode(String csvPath, String indexDir, String outputTable,
                       int nPartitions, int numResults, float fraction) throws IOException {
 
         Dataset<Row> inputDataFrame = spark.read().format("csv")
@@ -121,7 +121,7 @@ public class BatchGeocoder {
 
         outputFrame.createOrReplaceTempView("geocoded_output");
 
-        String saveToTableQuery = readResource("saveToHive.sql");
+        String saveToTableQuery = String.format(readResource("saveToHive.sql"), outputTable);
 
         logger.info("Executing: " + saveToTableQuery);
 
@@ -137,13 +137,13 @@ public class BatchGeocoder {
     public static void main(String[] args) throws IOException {
         String inputCSVPath = args[0];
         String indexPath = args[1];
-        String outputPath = args[2];
+        String outputTable = args[2];
         int partitions = Integer.parseInt(args[3]);
         int numResults = Integer.parseInt(args[4]);
         float fraction = Float.parseFloat(args[5]);
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.batchGeocode(inputCSVPath, indexPath, outputPath, partitions, numResults, fraction);
+        bg.batchGeocode(inputCSVPath, indexPath, outputTable, partitions, numResults, fraction);
     }
 }

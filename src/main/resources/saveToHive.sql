@@ -1,4 +1,4 @@
-create table temp.batch_geocoder_output as
+create table %s as
 select
   input_data.*
 , geocoded_output.geocoder_address_output
