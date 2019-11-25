@@ -3,6 +3,7 @@ package org.nfpa.spatial;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.INIConfiguration;
 import org.apache.log4j.Logger;
+import org.apache.spark.SparkFiles;
 import org.apache.wink.json4j.JSONException;
 import org.locationtech.jts.io.ParseException;
 import org.nfpa.spatial.utils.Utils;
@@ -22,11 +23,10 @@ public class Driver {
         String option = params[0];
         String configPath = params[1];
 
-        INIConfiguration config = new INIConfiguration(configPath);
-
         switch (option){
             case "--download":{
                 logger.info("Processing raw TIGER data...");
+                INIConfiguration config = new INIConfiguration(configPath);
 
                 String TIGER_DOWNLOAD_DIR = config.getString("download.download.dir");
                 String TIGER_BASE_DIR = config.getString("download.base.dir");
@@ -55,6 +55,7 @@ public class Driver {
             break;
             case "--process":{
                 logger.info("Processing raw TIGER data...");
+                INIConfiguration config = new INIConfiguration(configPath);
 
                 String TIGER_UNCOMPRESSED_DIR = config.getString("process.uncompressed.dir");
                 String TIGER_PROCESSED_DIR = config.getString("process.processed.dir");
@@ -67,6 +68,7 @@ public class Driver {
             break;
             case "--index":{
                 logger.info("Indexing...");
+                INIConfiguration config = new INIConfiguration(configPath);
 
                 String TIGER_PROCESSED_DIR = config.getString("index.processed.dir");
                 String INDEX_OUTPUT_DIR = config.getString("index.index.output.dir");
@@ -81,6 +83,7 @@ public class Driver {
             break;
             case "--geocode":{
                 logger.info("Searching...");
+                INIConfiguration config = new INIConfiguration(configPath);
 
                 String LIBPOSTAL_PATH = config.getString("runtime.libpostal.so.path");
                 logger.info(LIBPOSTAL_PATH);
@@ -103,6 +106,11 @@ public class Driver {
             case "--batch-geocode":{
                 logger.info("Batch Geocoding...");
 
+                BatchGeocoder batchGeocoder = new BatchGeocoder();
+                batchGeocoder.initSpark();
+                batchGeocoder.addFileToContext(configPath);
+                INIConfiguration config = batchGeocoder.getConfig(configPath);
+
                 String INPUT_DIR = config.getString("batch-geocode.input.dir");
                 String LUCENE_INDEX_DIR = config.getString("batch-geocode.lucene.index.dir");
                 String HIVE_OUTPUT_TABLE = config.getString("batch-geocode.hive.output.table");
@@ -117,8 +125,6 @@ public class Driver {
                 logger.info("NUM_RESULTS: " + NUM_RESULTS);
                 logger.info("INPUT_FRACTION: " + INPUT_FRACTION);
 
-                BatchGeocoder batchGeocoder = new BatchGeocoder();
-                batchGeocoder.initSpark();
                 batchGeocoder.initHadoop();
                 batchGeocoder.batchGeocode(
                         INPUT_DIR,
@@ -132,6 +138,7 @@ public class Driver {
             break;
             case "--reverse-geocode":{
                 logger.info("Searching...");
+                INIConfiguration config = new INIConfiguration(configPath);
 
                 String LUCENE_INDEX_DIR = config.getString("reverse-geocode.lucene.index.dir");
                 Double IP_LAT = config.getDouble("reverse-geocode.ip.lat");

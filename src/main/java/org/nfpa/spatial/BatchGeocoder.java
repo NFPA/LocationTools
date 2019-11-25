@@ -1,10 +1,13 @@
 package org.nfpa.spatial;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.INIConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkFiles;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
@@ -45,6 +48,17 @@ public class BatchGeocoder {
         GeoSparkSQLRegistrator.registerAll(spark.sqlContext());
         Logger.getLogger("org.apache.spark").setLevel(Level.WARN);
         Logger.getLogger("akka").setLevel(Level.WARN);
+    }
+
+    void addFileToContext(String filePath){
+        spark.sparkContext().addFile(filePath);
+    }
+
+    INIConfiguration getConfig(String fileName) throws ConfigurationException {
+        String sparkFile = SparkFiles.get(fileName);
+        logger.info(sparkFile);
+        INIConfiguration config = new INIConfiguration(sparkFile);
+        return config;
     }
 
     void initHadoop(){
