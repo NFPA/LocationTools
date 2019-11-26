@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-RUN apt-get update && apt-get install -y openjdk-8-jdk curl autoconf automake libtool pkg-config git
+RUN apt-get update && apt-get install -y openjdk-8-jdk curl autoconf automake libtool pkg-config git unzip
 
 
 ARG COMMIT
@@ -28,16 +28,10 @@ RUN ["mv", "/jpostal/src/main/jniLibs", "/usr/src/jniLibs"]
 COPY target/location-tools-1.0-SNAPSHOT.jar /usr/src/location-tools-1.0-SNAPSHOT.jar
 COPY vertx-docker-conf.json /usr/src/conf/vertx-docker-conf.json
 
-# Change the location of lucene index
-ADD TIGER_RAW/index /usr/src/index
 
+# Copy on start executables
 COPY onstart-docker.sh /usr/src/onstart-docker.sh
 RUN ["chmod", "+x", "/usr/src/onstart-docker.sh"]
 CMD ["/usr/src/onstart-docker.sh"]
-
-#COPY docker-driver.ini /usr/src/docker-driver.ini
-#CMD \
-#java -cp /usr/src/location-tools-1.0-SNAPSHOT.jar org.nfpa.spatial.Driver --download /usr/src/docker-driver.ini ;\
-#java -cp /usr/src/location-tools-1.0-SNAPSHOT.jar org.nfpa.spatial.Driver --process /usr/src/docker-driver.ini ;
 
 EXPOSE 8080
