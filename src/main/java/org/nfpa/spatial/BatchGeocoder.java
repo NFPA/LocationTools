@@ -95,8 +95,10 @@ public class BatchGeocoder {
             addressIndex = inputDataFrame.schema().fieldIndex("address");
             joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
         } catch (IllegalArgumentException e){
-            logger.error("address and join_key must be in header");
-            throw e;
+            logger.info("address and join_key must be in header");
+            logger.info("Setting default 0, 1 index");
+            joinKeyIndex = 0; addressIndex = 1;
+//            throw e;
         }
 
         int finalJoinKeyIndex = joinKeyIndex;
