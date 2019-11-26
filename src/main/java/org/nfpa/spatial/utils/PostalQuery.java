@@ -168,7 +168,14 @@ public class PostalQuery implements Serializable {
 
     public CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
-        ParsedComponent[] parsedComponents = p.parseAddress(address);
+        String newAddress;
+        if (address == null){
+            newAddress = "null";
+        }else {
+            newAddress = address;
+        }
+
+        ParsedComponent[] parsedComponents = p.parseAddress(newAddress);
         List<Query> queryComps = new ArrayList<>();
         BooleanQuery.Builder addressQueryBuilder = new BooleanQuery.Builder();
 
