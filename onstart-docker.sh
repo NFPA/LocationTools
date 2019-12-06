@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #BUILD can be sample or all
-BUILD=all
+BUILD=sample
 
 echo "Downloading lucene index....."
 curl https://tiger-lucene-index.s3.us-east-2.amazonaws.com/lucene-{$BUILD}-states-index.zip -o lucene-index.zip
