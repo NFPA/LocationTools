@@ -28,12 +28,7 @@ docker container run -p 8088:8080 nfpa-location-tools
 
 ### Complete USA Build
 
-```
-git clone https://github.com/NFPA/LocationTools.git
-cd LocationTools
-```
-
-Edit the `onstart-docker.sh` file and change `https://tiger-lucene-index.s3.us-east-2.amazonaws.com/lucene-sample-states-index.zip` to `https://tiger-lucene-index.s3.us-east-2.amazonaws.com/lucene-all-states-index.zip` and then proceed  to:
+Edit the `onstart-docker.sh` file and change `BUILD` variable to `all` instead of `sample` and then proceed  to:
 
 ```
 docker image build -t nfpa-location-tools .
