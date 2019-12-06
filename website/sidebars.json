@@ -1,10 +1,15 @@
 {
   "docs": {
-    "Docusaurus": ["doc1"],
-    "First Category": ["doc2"],
-    "Second Category": ["doc3"]
-  },
-  "docs-other": {
-    "First Category": ["doc4", "doc5"]
+    "Getting Started": ["requirements", "build", "config",
+	    "lucene_index", "console_example"],
+    
+    "API Server": ["starting_api", "api_reference"],
+
+    "Spark Batch Processing": ["cluster_req", "cluster_run"],
+    
+    "Docker": ["docker_setup", "docker_run"],
+
+    "Comparison Statistics": []
+
   }
 }
