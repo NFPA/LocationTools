@@ -1,8 +1,19 @@
 ---
 id: docker_run
-title: Running Docker
-sidebar_label: Running Docker
+title: Running Pre-Built Docker Image
+sidebar_label: Pre-Built Image
 ---
 
-### Running Docker
-Bind port to localhost
+## Load Image
+If you have a pre built docker image nfpa-location-tools.tar, you can load it into you Docker with
+
+```
+docker load --input nfpa-location-tools.tar
+```
+
+And then run the image with
+
+```
+sudo docker container run -p 8080:8080 nfpa-location-tools:latest
+```
+

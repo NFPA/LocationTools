@@ -14,6 +14,7 @@ sidebar_label: Docker Setup
 ```
 git clone https://github.com/NFPA/LocationTools.git
 cd LocationTools
+mvn clean install
 docker image build -t nfpa-location-tools .
 docker container run -p 8080:8080 nfpa-location-tools
 ```
@@ -34,6 +35,15 @@ Edit the `onstart-docker.sh` file and change `BUILD` variable to `all` instead o
 docker image build -t nfpa-location-tools .
 docker container run -p 8080:8080 nfpa-location-tools
 ```
+
+### Exporting Docker Image
+
+To share this build with others you can export the docker image to a tar as follows
+
+```
+docker save -o nfpa-location-tools.tar nfpa-location-tools:latest
+```
+
 
 ### Troubleshooting
 
