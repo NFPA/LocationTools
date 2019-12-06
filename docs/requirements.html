@@ -1,0 +1,99 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Requirements · Location Tools</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="## libpostal"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Requirements · Location Tools"/><meta property="og:type" content="website"/><meta property="og:url" content="https://NFPA.github.io/LocationTools/"/><meta property="og:description" content="## libpostal"/><meta property="og:image" content="https://NFPA.github.io/LocationTools/img/undraw_online.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://NFPA.github.io/LocationTools/img/undraw_tweetstorm.svg"/><link rel="shortcut icon" href="/LocationTools/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><link rel="alternate" type="application/atom+xml" href="https://NFPA.github.io/LocationTools/blog/atom.xml" title="Location Tools Blog ATOM Feed"/><link rel="alternate" type="application/rss+xml" href="https://NFPA.github.io/LocationTools/blog/feed.xml" title="Location Tools Blog RSS Feed"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/LocationTools/js/scrollSpy.js"></script><link rel="stylesheet" href="/LocationTools/css/main.css"/><script src="/LocationTools/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/LocationTools/"><img class="logo" src="/LocationTools/img/favicon.ico" alt="Location Tools"/><h2 class="headerTitleWithLogo">Location Tools</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive siteNavItemActive"><a href="/LocationTools/docs/requirements" target="_self">Docs</a></li><li class="siteNavGroupActive"><a href="/LocationTools/docs/api_reference" target="_self">API</a></li><li class=""><a href="/LocationTools/help" target="_self">Help</a></li><li class=""><a href="/LocationTools/blog/" target="_self">Blog</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Getting Started</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle collapsible">Getting Started<span class="arrow"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#565656" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></h3><ul class="hide"><li class="navListItem navListItemActive"><a class="navItem" href="/LocationTools/docs/requirements">Installing Prerequisites</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/build">Building JAR</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/config">Configuration</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/lucene_index">Building lucene index</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/console_example">Console Examples</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle collapsible">API Server<span class="arrow"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#565656" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></h3><ul class="hide"><li class="navListItem"><a class="navItem" href="/LocationTools/docs/starting_api">API Server</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/api_reference">API reference</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle collapsible">Spark Batch Processing<span class="arrow"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#565656" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></h3><ul class="hide"><li class="navListItem"><a class="navItem" href="/LocationTools/docs/cluster_req">Setting up Spark Cluster</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/cluster_run">Building JAR</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle collapsible">Docker<span class="arrow"><svg width="24" height="24" viewBox="0 0 24 24"><path fill="#565656" d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"></path><path d="M0 0h24v24H0z" fill="none"></path></svg></span></h3><ul class="hide"><li class="navListItem"><a class="navItem" href="/LocationTools/docs/docker_setup">Docker Setup</a></li><li class="navListItem"><a class="navItem" href="/LocationTools/docs/docker_run">Running Docker</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Requirements</h1></header><article><div><span><h2><a class="anchor" aria-hidden="true" id="libpostal"></a><a href="#libpostal" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>libpostal</h2>
+<p>Install <a href="https://github.com/openvenues/libpostal">libpostal</a></p>
+<h2><a class="anchor" aria-hidden="true" id="jpostal"></a><a href="#jpostal" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>jpostal</h2>
+<p>Install <a href="https://github.com/openvenues/jpostal">jpostal</a></p>
+<h3><a class="anchor" aria-hidden="true" id="building-the-project"></a><a href="#building-the-project" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Building the Project</h3>
+<ul>
+<li><p>Install GIT and Maven on your laptop</p>
+<p><a href="https://desktop.github.com/">Github Desktop</a> or <a href="https://git-scm.com/book/en/v2/Getting-Started-Installing-Git">Git</a> should work.</p>
+<p><a href="https://maven.apache.org/install.html">Maven 3.6.0 or higher</a> should work.</p></li>
+<li><p>Clone the Location Tools Repo</p>
+<p><code>git clone https://github.com/NFPA/LocationTools.git</code></p></li>
+<li><p>Install local version<br>
+<code>mvn clean install</code></p>
+<blockquote>
+<p>This should produce Locationtools-1.0-snapshot.jar or similar .jar file that will be used for running the application.</p>
+</blockquote></li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="geo-coder-runtime-requirements"></a><a href="#geo-coder-runtime-requirements" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Geo-coder Runtime Requirements</h3>
+<ul>
+<li>Installation of Address Pasrsing/Normalization Module
+<ul>
+<li>Install Libpostal (Please refer <a href="https://github.com/openvenues/libpostal">How to Install Libpostal</a>)</li>
+<li>Our project uses the JAVA Bindings to Libpostal. (Please refer <a href="https://github.com/openvenues/jpostal">How to build Jpostal Bindings</a>)</li>
+</ul>
+<blockquote>
+<p>Note down the path for shared LibPostal Libraries (this will be used later in running the project)</p>
+</blockquote></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="batch-mode--"></a><a href="#batch-mode--" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Batch Mode -</h2>
+<p>This section will get you up and running on a Distributed Cluster (like Cloudera Distribution Hadoop). In addition to the above steps please run the below commands.</p>
+<ul>
+<li>Please check if your hadoop services are up and running.
+<code>jps</code>
+<blockquote>
+<p>Hadoop version 2.7 and above should be work.</p>
+</blockquote></li>
+<li>Check Spark version and Spark Submit version [TO DO add more details here]
+<blockquote>
+<p>Spark version 2.0 and above should work.</p>
+</blockquote></li>
+<li>We use <a href="https://docs.cloudera.com/documentation/enterprise/5-13-x/topics/cdh_ig_running_spark_on_yarn.html">Spark on YARN</a> service.</li>
+</ul>
+</span></div></article></div><div class="docLastUpdate"><em>Last updated on 12/6/2019 by rahul-pande</em></div><div class="docs-prevnext"><a class="docs-next button" href="/LocationTools/docs/build"><span>Building JAR</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#libpostal">libpostal</a></li><li><a href="#jpostal">jpostal</a><ul class="toc-headings"><li><a href="#building-the-project">Building the Project</a></li><li><a href="#geo-coder-runtime-requirements">Geo-coder Runtime Requirements</a></li></ul></li><li><a href="#batch-mode--">Batch Mode -</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/LocationTools/" class="nav-home"><img src="/LocationTools/img/favicon.ico" alt="Location Tools" width="66" height="58"/></a><div><h5>Docs</h5><a href="/LocationTools/docs/en/doc1.html">Getting Started (or other categories)</a><a href="/LocationTools/docs/en/doc2.html">Guides (or other categories)</a><a href="/LocationTools/docs/en/doc3.html">API Reference (or other categories)</a></div><div><h5>Community</h5><a href="/LocationTools/en/users.html">User Showcase</a><a href="https://stackoverflow.com/questions/tagged/" target="_blank" rel="noreferrer noopener">Stack Overflow</a><a href="https://discordapp.com/">Project Chat</a><a href="https://twitter.com/" target="_blank" rel="noreferrer noopener">Twitter</a></div><div><h5>More</h5><a href="/LocationTools/blog">Blog</a><a href="https://github.com/">GitHub</a><a class="github-button" data-icon="octicon-star" data-count-href="/facebook/docusaurus/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/LocationTools/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2019 National Fire Protection Association</section></footer></div></body></html>

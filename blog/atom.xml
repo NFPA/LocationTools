@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://NFPA.github.io/LocationTools/blog</id>
-    <title>Test Site Blog</title>
+    <title>Location Tools Blog</title>
     <updated>2017-10-24T06:00:00Z</updated>
     <generator>Feed for Node.js</generator>
     <link rel="alternate" href="https://NFPA.github.io/LocationTools/blog"/>
-    <subtitle>The best place to stay up-to-date with the latest Test Site news and events.</subtitle>
+    <subtitle>The best place to stay up-to-date with the latest Location Tools news and events.</subtitle>
     <logo>https://NFPA.github.io/LocationTools/img/favicon.ico</logo>
-    <rights>Copyright © 2019 Your Name or Your Company Name</rights>
+    <rights>Copyright © 2019 National Fire Protection Association</rights>
     <entry>
         <title type="html"><![CDATA[New Version 1.0.0]]></title>
         <id>https://NFPA.github.io/LocationTools/blog/2017/10/24/new-version-1.0.0.html</id>
