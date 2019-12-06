@@ -14,6 +14,6 @@ docker load --input nfpa-location-tools.tar
 And then run the image with
 
 ```
-sudo docker container run -p 8080:8080 nfpa-location-tools:latest
+docker container run -p 8080:8080 nfpa-location-tools:latest
 ```
 
