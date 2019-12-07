@@ -4,8 +4,7 @@ title: Building the project
 sidebar_label: Building JAR
 ---
 
-## Building the Project
-- Install GIT and Maven
+## Building JAR
 
 <!--DOCUSAURUS_CODE_TABS-->
 <!--JavaScript-->
@@ -36,19 +35,12 @@ end.
 ```
 
 <!--END_DOCUSAURUS_CODE_TABS-->
-On Ubuntu:
+
+Clone the Location Tools repository and build fat jar from source
 
 ```
-$ sudo apt-get update
-$ sudo apt-get -y git maven
+git clone https://github.com/NFPA/LocationTools.git
+mvn clean install
 ```
 
-- Clone the Location Tools Repo
-
-```git clone https://github.com/NFPA/LocationTools.git```
-
-- Build jar from source
-
-```mvn clean install```
-
-You should now have Locationtools-1.0-snapshot.jar in `target` directory.
+You should now have `location-tools-1.0-SNAPSHOT.jar` in `target` directory.

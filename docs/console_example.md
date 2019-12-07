@@ -4,10 +4,8 @@ title: Single Mode
 sidebar_label: Console Examples
 ---
 
-### Single Geocoding
-Coming Soon !!!
+## Geocoding Single Address
 
 
-### Single Reverse Geocoding
-API takes the following JSON Properties and values. Look for a sample template in src/conf folder.
+## Reverse Geocoding Sinlge Geocode
 

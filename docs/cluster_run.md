@@ -39,13 +39,13 @@ spark2-submit --master yarn \
   >
   > **Spark Configuration (--conf)** - Arbitary Spark Configuration as `Prop=Value` format
   >
-  > **Jar File Location** - Location of your JAR file generated from [Getting Started](GettingStarted.md#geo-coder-runtime-requirements) step.
+  > **Jar File Location** - Location of your JAR file generated from Getting Started step.
   >
   > **Functionality Tag (--batch-geocode)** - Function to Run. Refer Scripts [TODO Add Driver Script Explanation]
   >
   > **Input File Location** - Location of your input files.
   >
-  > **Index location** - Location of Index Files generated from [Build Indexes](BuildIndex#build-lucene-indexes) step.
+  > **Index location** - Location of Index Files generated from Build Indexes step.
   >
   > **No of Partitions** - Number of output file partitions to create.
   >
