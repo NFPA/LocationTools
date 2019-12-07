@@ -1,53 +1,55 @@
 ---
 id: cluster_run
-title: Building the project
-sidebar_label: Building JAR
+title: Running Spark Application
+sidebar_label: Running Spark Application
 ---
 
-### Spark Submit Command
+## Driver Configuration
+As mentioned in the [Configuration](config.md) section, the `Driver` class picks up parameters from `driver.ini` configuration file. For batch geocoding you need to change parameters of the `[batch-geocode]` sections.
 
-```
+- The format of input files should be `tsv` (tab separated values), which must have `address` and `join_key` columns (headers).
+- This application outputs data directly to hive. You need to change the `hive.output.table` for each run or else the spark application will fail with `AnalysisException: Table already exists`
+
+## Submitting Spark Application
+
+```bash
 spark2-submit --master yarn \
- --deploy-mode cluster \
- --class "org.nfpa.spatial.Driver" \
- --num-executors 8 \
- --executor-memory 16G \
- --executor-cores 8 \
- --conf "spark.storage.memoryFraction=1" \
- --conf "spark.yarn.executor.memoryOverhead=4096" \
- --conf spark.executor.extraLibraryPath=/home/rpande/jniLibs \
- --conf spark.driver.extraLibraryPath=/home/rpande/jniLibs \
- ./LocationTools/target/location-tools-1.0-SNAPSHOT.jar \
- --batch-geocode hdfs://10.10.10.80:8020/user/rpande/comparison \
- /home/rpande/index/ \
- hdfs://10.10.10.80:8020/user/rpande/comparison/output \
- 50 \
- 1.0 \
- 2>&1 | tee batch.log
+--deploy-mode cluster \
+--class "org.nfpa.spatial.Driver" \
+--num-executors 80 \
+--executor-memory 18G \
+--executor-cores 2 \
+--files=driver.ini \
+--conf "spark.storage.memoryFraction=1" \
+--conf "spark.yarn.executor.memoryOverhead=2048" \
+--conf spark.executor.extraLibraryPath=/path/to/jniLibs \
+--conf spark.driver.extraLibraryPath=/path/to/jniLibs \
+path/to/location-tools-1.0-SNAPSHOT.jar --batch-geocode driver.ini
 ```
 
-  #### Arguments:
-  **Note** : Run `spark2-submit --help` for more configuration options.
-  > **Master URL (--master)** - URL where Application master for this job will be instantiated. If you have yarn installed then choose `yarn`. Default is `local`.
-  >
-  > **Deploy Mode (--deploy-mode)**- Place to launch the driver program. Choose `cluster` if you want ot spin it on one of the worker machines on the cluster. Otherwise, choose `client` for local.
-  > **Java Class (--class)** - Application Driver Class Name
-  >
-  > **Executor (--executor-memory)** -
-  >
-  > **Executor Cores (--executor-cores)** -
-  >
-  > **Spark Configuration (--conf)** - Arbitary Spark Configuration as `Prop=Value` format
-  >
-  > **Jar File Location** - Location of your JAR file generated from Getting Started step.
-  >
-  > **Functionality Tag (--batch-geocode)** - Function to Run. Refer Scripts [TODO Add Driver Script Explanation]
-  >
-  > **Input File Location** - Location of your input files.
-  >
-  > **Index location** - Location of Index Files generated from Build Indexes step.
-  >
-  > **No of Partitions** - Number of output file partitions to create.
-  >
-  > **No of Results** - Number of results to be returned in output.
+You should run `spark2-submit` in either headless mode or in `tmux` session, since batch jobs may take several hours to execute.
 
+## `spark2-submit` Arguments
+
+- --master : URL where Application master for this job will be instantiated. If you are running Spark on YARN, then choose `yarn`. Default is `local`
+
+- --deploy-mode : Choose `cluster` if you want to spin it on one of the node machines on the cluster. Otherwise, choose `client` for local.
+
+- --class : Application driver class name
+
+- --num-executors : Number of executors to spawn
+ 
+- --executor-memory : Memory to be allocated to each executor
+
+- --executor-cores : Number of cpu cores allocated to each executor
+
+- --conf : Arbitary Spark Configuration as `Key=Value` format. For values that contain spaces wrap “key=value” in quotes
+  
+- `path/to/location-tools-1.0-SNAPSHOT.jar` : Location of the JAR file generated after [building the project](build.md)
+  
+- --batch-geocode : Direct the `Driver` class to run batch geocoding application
+- driver.ini : Path to `driver.ini` configuration file
+
+## Tuning Spark Paramters
+
+Please refer to [this stackoverflow thread](https://stackoverflow.com/questions/37871194/) to estimate spark paramters
