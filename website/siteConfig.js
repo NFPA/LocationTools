@@ -22,7 +22,7 @@ const users = [
 
 const siteConfig = {
   title: 'Location Tools', // Title for your website.
-  tagline: 'A website for testing',
+  tagline: 'Geocoding API by NFPA',
   url: 'https://NFPA.github.io', // Your website URL
   baseUrl: '/LocationTools/', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
