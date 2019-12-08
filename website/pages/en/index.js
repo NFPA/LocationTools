@@ -95,50 +95,23 @@ class Index extends React.Component {
       <div
         className="productShowcaseSection paddingBottom"
         style={{textAlign: 'center'}}>
-        <h2>Feature Callout</h2>
-        <MarkdownBlock>These are features of this project</MarkdownBlock>
+        <h2>Other Features</h2>
+        <MarkdownBlock>
+	    LineString Interpolation | Spark Batch Processing | Search & Address Scoring
+	</MarkdownBlock>
       </div>
     );
 
-    const TryOut = () => (
-      <Block id="try">
-        {[
-          {
-            content:
-              'To make your landing page more attractive, use illustrations! Check out ' +
-              '[**unDraw**](https://undraw.co/) which provides you with customizable illustrations which are free to use. ' +
-              'The illustrations you see on this page are from unDraw.',
-            image: `${baseUrl}img/undraw_code_review.svg`,
-            imageAlign: 'left',
-            title: 'Wonderful SVG Illustrations',
-          },
-        ]}
-      </Block>
-    );
-
-    const Description = () => (
-      <Block background="dark">
-        {[
-          {
-            content:
-              'This is another description of how this project is useful',
-            image: `${baseUrl}img/undraw_note_list.svg`,
-            imageAlign: 'right',
-            title: 'Description',
-          },
-        ]}
-      </Block>
-    );
 
     const LearnHow = () => (
       <Block background="light">
         {[
           {
             content:
-              'Each new Docusaurus project has **randomly-generated** theme colors.',
+              'Placeholder',
             image: `${baseUrl}img/undraw_youtube_tutorial.svg`,
             imageAlign: 'right',
-            title: 'Randomly Generated Theme Colors',
+            title: 'Placeholder',
           },
         ]}
       </Block>
@@ -148,49 +121,26 @@ class Index extends React.Component {
       <Block layout="fourColumn">
         {[
           {
-            content: 'This is the content of my feature',
-            image: `${baseUrl}img/undraw_react.svg`,
+            content: 'Uses <a href="https://github.com/openvenues/libpostal">libpostal</a>, <a href="https://lucene.apache.org/core/8_2_0">Lucene 8.2</a> and <a href="https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/tiger-geo-line.2018.html">US Census TIGER data</a>',
+            image: `${baseUrl}img/undraw_geocoding.svg`,
             imageAlign: 'top',
-            title: 'Feature One',
+            title: 'Geocoding',
           },
           {
-            content: 'The content of my second feature',
-            image: `${baseUrl}img/undraw_operating_system.svg`,
+            content: 'Get street level address from geocode',
+            image: `${baseUrl}img/undraw_address.svg`,
             imageAlign: 'top',
-            title: 'Feature Two',
+            title: 'Reverse Geocoding',
           },
+	  {
+	    content: 'Takes minutes to deploy with Docker and pre-built lucene index',
+            image: `${baseUrl}img/undraw_deployment.svg`,
+            imageAlign: 'top',
+	    title: 'Deployment Ready',
+	  }
         ]}
       </Block>
     );
-
-    const Showcase = () => {
-      if ((siteConfig.users || []).length === 0) {
-        return null;
-      }
-
-      const showcase = siteConfig.users
-        .filter(user => user.pinned)
-        .map(user => (
-          <a href={user.infoLink} key={user.infoLink}>
-            <img src={user.image} alt={user.caption} title={user.caption} />
-          </a>
-        ));
-
-      const pageUrl = page => baseUrl + (language ? `${language}/` : '') + page;
-
-      return (
-        <div className="productShowcaseSection paddingBottom">
-          <h2>Who is Using This?</h2>
-          <p>This project is used by all these people</p>
-          <div className="logos">{showcase}</div>
-          <div className="more-users">
-            <a className="button" href={pageUrl('users.html')}>
-              More {siteConfig.title} Users
-            </a>
-          </div>
-        </div>
-      );
-    };
 
     return (
       <div>
@@ -198,10 +148,6 @@ class Index extends React.Component {
         <div className="mainContainer">
           <Features />
           <FeatureCallout />
-          <LearnHow />
-          <TryOut />
-          <Description />
-          <Showcase />
         </div>
       </div>
     );
