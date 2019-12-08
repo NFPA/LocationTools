@@ -50,6 +50,6 @@ Response:
 
 Sample Reverse Geocoding Request:
 ```bash
-http://localhost:8080/reverse-geocoder/v1?lat=42.2303&lon=-71.0269&radius=0.01&n=2
+curl http://localhost:8080/reverse-geocoder/v1?lat=42.2303&lon=-71.0269&radius=0.01&n=2
 ```
 
