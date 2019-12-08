@@ -4,7 +4,7 @@ title: API reference
 sidebar_label: API reference
 ---
 
-### Geocoding API
+## Geocoding API
 
 Endpoint:
 
@@ -28,7 +28,7 @@ Sample Geocoding Request:
 curl http://localhost:8080/geocoder/v1?n=1&address=1%20Batterymarch%20Park%20Quincy%20MA
 ```
 
-### Reverse Geocode API
+## Reverse Geocode API
 
 Endpoint:
 
