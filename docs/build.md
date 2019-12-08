@@ -8,7 +8,7 @@ sidebar_label: Building JAR
 
 Clone the Location Tools repository and build fat jar from source
 
-```
+```bash
 git clone https://github.com/NFPA/LocationTools.git
 mvn clean install
 ```
