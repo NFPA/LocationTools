@@ -1,8 +1,7 @@
 ---
-title: New Version 1.0.0
-author: Eric Nakagawa
-authorURL: http://twitter.com/ericnakagawa
-authorFBID: 661277173
+title: Release 1.0
+author: Rahul Pande
+authorURL: https://www.linkedin.com/in/pande-rahul/
 ---
 
-This blog post will test file name parsing issues when periods are present.
+This is the first beta release of NFPA Location Tools
