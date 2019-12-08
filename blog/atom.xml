@@ -9,15 +9,15 @@
     <logo>https://NFPA.github.io/LocationTools/img/favicon.ico</logo>
     <rights>Copyright © 2019 National Fire Protection Association</rights>
     <entry>
-        <title type="html"><![CDATA[New Version 1.0.0]]></title>
+        <title type="html"><![CDATA[Release 1.0]]></title>
         <id>https://NFPA.github.io/LocationTools/blog/2017/10/24/new-version-1.0.0.html</id>
         <link href="https://NFPA.github.io/LocationTools/blog/2017/10/24/new-version-1.0.0.html">
         </link>
         <updated>2017-10-24T06:00:00Z</updated>
-        <summary type="html"><![CDATA[<p>This blog post will test file name parsing issues when periods are present.</p> ]]></summary>
+        <summary type="html"><![CDATA[<p>This is the first beta release of NFPA Location Tools</p> ]]></summary>
         <author>
-            <name>Eric Nakagawa</name>
-            <uri>http://twitter.com/ericnakagawa</uri>
+            <name>Rahul Pande</name>
+            <uri>https://www.linkedin.com/in/pande-rahul/</uri>
         </author>
     </entry>
     <entry>

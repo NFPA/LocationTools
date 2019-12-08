@@ -14,11 +14,11 @@
         </image>
         <copyright>Copyright © 2019 National Fire Protection Association</copyright>
         <item>
-            <title><![CDATA[New Version 1.0.0]]></title>
+            <title><![CDATA[Release 1.0]]></title>
             <link>https://NFPA.github.io/LocationTools/blog/2017/10/24/new-version-1.0.0.html</link>
             <guid>https://NFPA.github.io/LocationTools/blog/2017/10/24/new-version-1.0.0.html</guid>
             <pubDate>Tue, 24 Oct 2017 06:00:00 GMT</pubDate>
-            <description><![CDATA[<p>This blog post will test file name parsing issues when periods are present.</p> ]]></description>
+            <description><![CDATA[<p>This is the first beta release of NFPA Location Tools</p> ]]></description>
         </item>
         <item>
             <title><![CDATA[Adding RSS Support]]></title>
