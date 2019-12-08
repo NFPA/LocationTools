@@ -32,7 +32,7 @@ curl http://localhost:8080/geocoder/v1?n=1&address=1%20Batterymarch%20Park%20Qui
 
 Endpoint:
 
-```
+```bash
 /reverse-geocoder/v1
 ```
 Paramters:
