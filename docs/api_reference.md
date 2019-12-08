@@ -5,26 +5,51 @@ sidebar_label: API reference
 ---
 
 ### Geocoding API
-    Request
 
+Endpoint:
+
+```bash
+/geocoder/v1
 ```
-http://localhost:8080/geocoder/v1?n=1&address=36%20john%20st%20worcwster
-```
-    Response
+Paramters:
+  - address : The address string to geocode
+  - n : number of results to return
+
+Response:
 ```json
-"todo": "add details here"
+{
+	"response" : "TO-DO"
+}
+```
+
+Sample Geocoding Request:
+
+```bash
+curl http://localhost:8080/geocoder/v1?n=1&address=1%20Batterymarch%20Park%20Quincy%20MA
 ```
 
 ### Reverse Geocode API
 
-    Request
-```
-http://localhost:8080/reverse-geocoder/v1?lat=42.23033786087573&lon=-71.02699395656802&radius=0.01&n=2
-```
-      Response
-```json
-"todo": "add details here"
-```
-parameters
+Endpoint:
 
+```
+/reverse-geocoder/v1
+```
+Paramters:
+- lat : latitude
+- lon : longitude
+- radius : radius in km to search for (lat, lon) pair
+- n : number of results to return
+
+Response:
+```json
+{
+        "response" : "TO-DO"
+}
+```
+
+Sample Reverse Geocoding Request:
+```bash
+http://localhost:8080/reverse-geocoder/v1?lat=42.2303&lon=-71.0269&radius=0.01&n=2
+```
 
