@@ -170,7 +170,11 @@ public class PostalQuery implements Serializable {
             uniqueComponents.put(
                     comp.getLabel(),
                     uniqueComponents.get(comp.getLabel()) == null ? comp.getValue() :
-                            uniqueComponents.get(comp.getLabel()) + " " + comp.getValue()
+//                            To concat instead of latest component, uncomment the below line
+//                            uniqueComponents.get(comp.getLabel()) + " " + comp.getValue()
+
+//                            Get the latest component
+                            comp.getValue()
             );
         }
 
