@@ -19,10 +19,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostalQuery implements Serializable {
 
@@ -166,6 +163,28 @@ public class PostalQuery implements Serializable {
         return String.join(" ", elems);
     }
 
+    private static ParsedComponent[] deduplicateComponents(ParsedComponent[] parsedComponents){
+        HashMap<String, String> uniqueComponents = new HashMap();
+
+        for(ParsedComponent comp: parsedComponents){
+            uniqueComponents.put(
+                    comp.getLabel(),
+                    uniqueComponents.get(comp.getLabel()) == null ? comp.getValue() :
+                            uniqueComponents.get(comp.getLabel()) + " " + comp.getValue()
+            );
+        }
+
+        ParsedComponent[] uniqueParsedComponents = new ParsedComponent[uniqueComponents.keySet().size()];
+
+        int i = 0;
+        for(String key :uniqueComponents.keySet()){
+            logger.info(key + ":" + uniqueComponents.get(key));
+            uniqueParsedComponents[i] = new ParsedComponent(uniqueComponents.get(key), key);
+            i++;
+        }
+        return uniqueParsedComponents;
+    }
+
     public CompositeQuery makePostalQuery(String address) throws InvocationTargetException, IllegalAccessException {
 
         String newAddress;
@@ -182,7 +201,7 @@ public class PostalQuery implements Serializable {
         CompositeQuery compositeQuery = new CompositeQuery();
         String label, value;
 
-        for(ParsedComponent comp: parsedComponents){
+        for(ParsedComponent comp: deduplicateComponents(parsedComponents)){
             label = comp.getLabel();
             value = replaceWithAbbrev(comp.getValue());
             compositeQuery.addInputField("ip_postal_" + label, value);
