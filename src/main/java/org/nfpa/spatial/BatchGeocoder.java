@@ -50,6 +50,10 @@ public class BatchGeocoder {
         Logger.getLogger("akka").setLevel(Level.WARN);
     }
 
+    /*
+    * Adds the driver config file to the SparkContext so it is available to
+    * all the executors and not just the driver.
+    * */
     void addFileToContext(String filePath){
         spark.sparkContext().addFile(filePath);
     }
@@ -71,6 +75,9 @@ public class BatchGeocoder {
         );
     }
 
+    /*
+    * Read resource like hive output query
+    * */
     private String readResource(String resName)  throws IOException {
         InputStream in = this.getClass().getClassLoader().getResourceAsStream(resName);
         return IOUtils.toString(in);
@@ -90,21 +97,26 @@ public class BatchGeocoder {
 
         inputDataFrame.createOrReplaceTempView("input_data");
 
-        int addressIndex = 0, joinKeyIndex=-1;
+        /*check if headers are present, if not by default 0 is join_key and 1 is address*/
+        int addressIndex, joinKeyIndex;
         try{
             addressIndex = inputDataFrame.schema().fieldIndex("address");
             joinKeyIndex = inputDataFrame.schema().fieldIndex("join_key");
         } catch (IllegalArgumentException e){
             logger.info("address and join_key must be in header");
-            logger.info("Setting default 0, 1 index");
+            logger.info("Setting default 0: join_key, 1:address index");
             joinKeyIndex = 0; addressIndex = 1;
-//            throw e;
         }
 
         int finalJoinKeyIndex = joinKeyIndex;
         int finalAddressIndex = addressIndex;
 
         JavaRDD<Row> rawRDD = inputDataFrame.toJavaRDD();
+
+        /*
+        * We apply the geocoding function and keep the join_key and address fields
+        * */
+
         JavaRDD<Row> newRDD = rawRDD.mapPartitions((FlatMapFunction<Iterator<Row>, Row>) iterator -> {
             GeocodeWrapper geocodeWrapper = new GeocodeWrapper(indexDir);
             List<Row> outputRows = new ArrayList<Row>();
@@ -123,6 +135,10 @@ public class BatchGeocoder {
             return outputRows.iterator();
         });
 
+        /*
+        * creates data types for spark output
+        * */
+
         ArrayType searchResultsType = DataTypes.createArrayType(
                 DataTypes.createMapType(DataTypes.StringType, DataTypes.StringType)
         );
@@ -134,8 +150,14 @@ public class BatchGeocoder {
         };
 
         Dataset outputFrame = spark.createDataFrame(newRDD, DataTypes.createStructType(fields));
+        outputFrame.toDF(new String[]{"geocoder_join_key", "geocoder_address", "geocoder_address_output"});
 
         outputFrame.createOrReplaceTempView("geocoded_output");
+
+        /*
+        * Preserve all columns from input and add the geocoder output.
+        * Output is saved to hive directly.
+        * */
 
         String saveToTableQuery = String.format(readResource("saveToHive.sql"), outputTable);
 
