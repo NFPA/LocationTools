@@ -34,6 +34,10 @@ public class Interpolator {
         return new int[] {fromAdd[0], toAdd[toAdd.length -1]};
     }
 
+    /*
+    * Perform LineString interpolation with given house number and the to-from house number fields in TIGER data
+    * */
+
     public Point getInterpolation(Document doc, int hNo, String geometryField) throws ParseException {
 
         String wktString = doc.get(geometryField);

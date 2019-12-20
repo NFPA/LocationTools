@@ -28,6 +28,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+/*
+* Used to plot result linestrings and interpolation points. For debugging only.
+* */
+
 public class InterpolationMapper {
     private static WKTReader wktReader;
     private static MapContent map;

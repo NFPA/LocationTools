@@ -33,6 +33,10 @@ public class PostalQuery implements Serializable {
         getAbbreviations();
     }
 
+    /*
+    * Mapping from libpostal field to lucene query clause.
+    * */
+
     private void initLibPostal() {
         logger.info("java.library.path " + System.getProperty("java.library.path"));
 
@@ -55,9 +59,6 @@ public class PostalQuery implements Serializable {
         });
     }
 
-    /*
-    * Replace topological names with abbreviations
-    * */
     private void getAbbreviations() {
         InputStream in;
         in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
@@ -154,6 +155,10 @@ public class PostalQuery implements Serializable {
         return new BoostQuery(stateQueryBuilder.build(), Scores.STATE.getWeight());
     }
 
+    /*
+     * Replace topological names with abbreviations since TIGER data has abbreviations
+     * */
+
     private static String replaceWithAbbrev(String comp){
         String[] elems = comp.split("\\s+");
         String replacement;
@@ -165,6 +170,10 @@ public class PostalQuery implements Serializable {
         }
         return String.join(" ", elems);
     }
+
+    /*
+    * Duplicate libpostal components make score more than  100
+    * */
 
     private static ParsedComponent[] deduplicateComponents(ParsedComponent[] parsedComponents){
         HashMap<String, String> uniqueComponents = new HashMap();

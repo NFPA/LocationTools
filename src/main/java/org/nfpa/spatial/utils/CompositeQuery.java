@@ -5,6 +5,11 @@ import org.apache.lucene.search.Query;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+/*
+* This class holds all the information about the input address (fields and address score)
+* , the lucene query and all the relevant information
+* */
+
 public class CompositeQuery {
     private Query query;
     private float addressScore = 0;
