@@ -121,6 +121,7 @@ public class Driver {
                 String HIVE_OUTPUT_TABLE = config.getString("batch-geocode.hive.output.table");
                 Integer NUM_PARTITIONS = config.getInteger("batch-geocode.num.partitions", 100);
                 Integer NUM_RESULTS = config.getInteger("batch-geocode.num.results", 1);
+                Boolean HEADER = config.getBoolean("batch-geocode.header", true);
                 Float INPUT_FRACTION = config.getFloat("batch-geocode.input.fraction");
 
                 logger.info("INPUT_DIR: " + INPUT_DIR);
@@ -137,6 +138,7 @@ public class Driver {
                         HIVE_OUTPUT_TABLE,
                         NUM_PARTITIONS,
                         NUM_RESULTS,
+                        HEADER,
                         INPUT_FRACTION
                 );
             }

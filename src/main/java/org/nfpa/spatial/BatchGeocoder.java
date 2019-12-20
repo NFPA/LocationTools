@@ -37,9 +37,9 @@ public class BatchGeocoder {
 
     void initSpark(){
         SparkConf conf = new SparkConf()
-                .setAppName("BatchGeocoder");
-//                .setAppName("BatchGeocoder")
-//                .setMaster("local");
+//                .setAppName("BatchGeocoder");
+                .setAppName("BatchGeocoder")
+                .setMaster("local");
         conf.set("spark.serializer", KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
@@ -84,13 +84,13 @@ public class BatchGeocoder {
     }
 
     void batchGeocode(String csvPath, String indexDir, String outputTable,
-                      int nPartitions, int numResults, float fraction) throws IOException {
+                      int nPartitions, int numResults, boolean header, float fraction) throws IOException {
 
         Dataset<Row> inputDataFrame = spark.read().format("csv")
                 .option("sep", "\t")
                 .option("inferSchema", true)
                 .option("quote", "\u0000")
-                .option("header", true)
+                .option("header", header)
                 .load(csvPath)
                 .sample(fraction)
                 .repartition(nPartitions);
@@ -178,10 +178,11 @@ public class BatchGeocoder {
         String outputTable = args[2];
         int partitions = Integer.parseInt(args[3]);
         int numResults = Integer.parseInt(args[4]);
+        boolean header = Boolean.parseBoolean(args[5]);
         float fraction = Float.parseFloat(args[5]);
         BatchGeocoder bg = new BatchGeocoder();
         bg.initSpark();
         bg.initHadoop();
-        bg.batchGeocode(inputCSVPath, indexPath, outputTable, partitions, numResults, fraction);
+        bg.batchGeocode(inputCSVPath, indexPath, outputTable, partitions, numResults, header, fraction);
     }
 }
