@@ -105,6 +105,11 @@ public class TigerReverseGeocoder implements Serializable {
         return resultHMap;
     }
 
+    /*
+    * Make point with given lat long and a circle around it with given radius.
+    * this will serve as a filter by distance for the search results.
+    * then return all results sorted by distance
+    * */
     public List<LinkedHashMap> spatialSearch(double ipLat, double ipLon, float radiusKM, int numRes) throws IOException, ParseException, JSONException {
 
         Point pt = ctx.makePoint(ipLon, ipLat);

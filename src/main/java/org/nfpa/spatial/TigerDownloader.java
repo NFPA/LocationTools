@@ -8,6 +8,13 @@ import org.nfpa.spatial.utils.ZipUtils;
 import java.io.*;
 import java.util.*;
 
+/*
+* This class gets properties from driver and downloads different files into
+* subdirectories. It also simultaneously unzips those files. Raw files are
+* not deleted after unzipping. You may want to delete those manually for
+* saving disk space.
+* */
+
 public class TigerDownloader {
     private FTPClient ftp;
     private FTPClientConfig ftpConfig;
@@ -21,6 +28,9 @@ public class TigerDownloader {
     private static List<String> TIGER_TYPES;
     private static List<String> TIGER_FILTER_TYPES;
 
+    /*
+    * Map state code to state fips for downloading
+    * */
     private void readProperties() throws IOException {
         for (String state : TIGER_STATES){
             statesFIPS.add(StateFIPS.getFIPS(state.trim()));

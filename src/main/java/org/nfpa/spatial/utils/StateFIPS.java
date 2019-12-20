@@ -2,6 +2,10 @@ package org.nfpa.spatial.utils;
 
 import java.util.HashMap;
 
+/*
+* Mapping for 2 char state code to state FIPS code.
+* */
+
 public class StateFIPS {
     private static final HashMap<String, String> stateCDMap = new HashMap();
     static {

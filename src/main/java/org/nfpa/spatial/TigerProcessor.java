@@ -79,6 +79,9 @@ public class TigerProcessor {
         return directories;
     }
 
+    /*
+    * Read all shape files into a single dataframe
+    * */
     private Dataset readDF(String base_dir, String directory, String state) throws IOException {
 
         List<String> subDirectories = listDirectories(base_dir + directory, true);
@@ -127,6 +130,9 @@ public class TigerProcessor {
         return filteredDirectories;
     }
 
+    /*
+    * Joins data from different file types like faces, edges, place, etc for given states sequentially
+    * */
     public static void process(String TIGER_BASE, String TIGER_PROCESSED) throws IOException {
 
         HashSet<String> availableStates = getUniqueStates(listDirectories(TIGER_BASE + "edges", false));

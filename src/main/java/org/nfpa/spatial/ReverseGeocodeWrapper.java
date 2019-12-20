@@ -13,6 +13,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+/*
+ * This class wraps output of TigerReverseGeocoder.spatialSearch function into different
+ * formats for consumption like JSONArray, String and Scala Map for hive.
+ * Any future format for consumption should be added here.
+ * */
+
 public class ReverseGeocodeWrapper implements Serializable {
     private TigerReverseGeocoder reverseGeocoder;
 

@@ -68,35 +68,12 @@ public class TigerGeocoder implements Serializable {
         INDEX_DIRECTORY = dir;
     }
 
-    private void printResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException {
-        Document doc1;
-
-        if (results.totalHits.value > 0) {
-            for (int i=0; i < 3 && i < results.scoreDocs.length; i++){
-                logger.info("Result: " + i);
-
-                doc1 = indexSearcher.doc(results.scoreDocs[i].doc);
-                logger.info("Score: " + results.scoreDocs[i].score);
-                for (IndexableField field : doc1) {
-                    System.out.print(field.name() + ":" + field.stringValue() + "\t");
-                }
-            }
-        }
-        else {
-            logger.info("No results");
-        }
-    }
-
-    private void mapResults(TopDocs results, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, org.locationtech.jts.io.ParseException {
-
-        if (results.totalHits.value < 1) return;
-
-        Document resultDoc = indexSearcher.doc(results.scoreDocs[0].doc);
-        int hno = Integer.parseInt(compositeQuery.get("ip_house_number"));
-
-//        interpolationMapper.mapWTKInterpolations(resultDoc, hno);
-    }
-
+    /*
+    * Get results from lucene TopDocs after lucene query and put the results into a list of hashmaps.
+    * List is for multiple search results. Each HashMap is a result from lucene index.
+    * It also adds all input fields from CompositeQuery.
+    * Composite Query holds Lucene Query and all input fields from libpostal output.
+    * */
     private List<LinkedHashMap> getResult(TopDocs topDocs, IndexSearcher indexSearcher, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
         Document doc;
         LinkedHashMap resultHMap;
@@ -115,6 +92,12 @@ public class TigerGeocoder implements Serializable {
         return results;
     }
 
+    /*
+    * Convert Lucene search result document to LinkedHashMap (to preserve order).
+    * If house number is given in input address, it tries to interpolate on house number.
+    * The interpolated lat long from TIGER is always preserved in the output.
+    * LineString interpolation output is added as LINT_* out fields in the output HashMap.
+    * */
     private LinkedHashMap getJSONFromDoc(Document doc, CompositeQuery compositeQuery) throws IOException, ParseException, JSONException {
         LinkedHashMap resultHMap = new LinkedHashMap();
             for (IndexableField field : doc) {
@@ -138,6 +121,11 @@ public class TigerGeocoder implements Serializable {
         return resultHMap;
     }
 
+    /*
+    * 1. Compose a query (CompositeQuery which includes lucene query and input fields parsed by libpostal)
+    * 2. Search Lucene Index with this query
+    * 3. Format the results and return
+    * */
     List<LinkedHashMap> search(String address, int numRes) throws IOException, IllegalAccessException, InvocationTargetException, ParseException, JSONException {
         CompositeQuery compositeQuery = postalQuery.makePostalQuery(address);
         searchQuery = compositeQuery.getQuery();

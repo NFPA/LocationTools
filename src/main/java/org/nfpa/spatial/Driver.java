@@ -16,6 +16,11 @@ import java.util.List;
 public class Driver {
     private static Logger logger = Logger.getLogger(Driver.class);
 
+    /*
+    * The driver class accepts function to perform (string like --download) and config
+    * file as explained in the documentation. Each section in the config file corresponds
+    * to a function.
+    * */
     public static void main(String... params) throws IOException, JSONException,
             InvocationTargetException, IllegalAccessException, ParseException,
             ConfigurationException, NoSuchFieldException {

@@ -50,6 +50,7 @@ public class TigerIndexer {
         initHadoop();
     }
 
+    /*Initialize spatial strategy to process geometric information*/
     void initGeoStuff(){
         this.ctx = JtsSpatialContext.GEO;
         this.shapeReader = this.ctx.getFormats().getReader(ShapeIO.WKT);
@@ -62,6 +63,9 @@ public class TigerIndexer {
         this.INDEX_DIRECTORY = indexDir;
     }
 
+    /*
+    * Needed when you use both local and hdfs file systems
+    * */
     void initHadoop(){
         hConf = new Configuration();
         hConf.set("fs.hdfs.impl",
@@ -113,6 +117,9 @@ public class TigerIndexer {
         logger.info("Index Successful: " + filePath);
     }
 
+    /*
+    * This converts a csv line record into a lucene document to index
+    * */
     private Document newDocument(CSVRecord record) throws IOException, ParseException {
 
         Document doc = new Document();

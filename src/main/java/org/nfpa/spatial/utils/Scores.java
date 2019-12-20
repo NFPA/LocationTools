@@ -1,5 +1,9 @@
 package org.nfpa.spatial.utils;
 
+/*
+* Scores enum for address and search scoring
+* */
+
 public enum Scores {
     HOUSE_NUMBER (5),
     ROAD (10),

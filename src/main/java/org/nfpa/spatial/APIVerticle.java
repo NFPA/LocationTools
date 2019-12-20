@@ -46,6 +46,8 @@ public class APIVerticle extends AbstractVerticle {
         Route geocodingRoute = router.route().path("/geocoder/v1/");
         Route reverseGeocodingRoute = router.route().path("/reverse-geocoder/v1/");
 
+
+        /*handler for the geocoding route*/
         geocodingRoute.handler(routingContext -> {
             logger.info("GET geocoding");
             address = routingContext.request().getParam("address");
@@ -76,6 +78,7 @@ public class APIVerticle extends AbstractVerticle {
 
         });
 
+        /*handler for the reverse-geocoding route*/
         reverseGeocodingRoute.handler(routingContext -> {
             logger.info("GET reverse geocoding");
             ipLat = Double.parseDouble(routingContext.request().getParam("lat"));

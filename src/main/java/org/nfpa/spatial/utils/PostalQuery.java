@@ -55,6 +55,9 @@ public class PostalQuery implements Serializable {
         });
     }
 
+    /*
+    * Replace topological names with abbreviations
+    * */
     private void getAbbreviations() {
         InputStream in;
         in = this.getClass().getClassLoader().getResourceAsStream("abbreviations.json");
@@ -182,7 +185,6 @@ public class PostalQuery implements Serializable {
 
         int i = 0;
         for(String key :uniqueComponents.keySet()){
-            logger.info(key + ":" + uniqueComponents.get(key));
             uniqueParsedComponents[i] = new ParsedComponent(uniqueComponents.get(key), key);
             i++;
         }
