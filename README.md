@@ -1,6 +1,7 @@
 ## Geocoding and Reverse Geocoding Tool
 
-Open project in IntelliJ Idea (Do not import)
+You can open the master branch in IntelliJ Idea (Do not import)
 
-### Driver.java
-Specify if you want to Index or Geocode
+### Documentation
+
+For complete documentation please check out https://nfpa.github.io/LocationTools
