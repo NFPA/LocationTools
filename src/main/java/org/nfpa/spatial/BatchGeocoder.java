@@ -37,9 +37,9 @@ public class BatchGeocoder {
 
     void initSpark(){
         SparkConf conf = new SparkConf()
-//                .setAppName("BatchGeocoder");
-                .setAppName("BatchGeocoder")
-                .setMaster("local");
+                .setAppName("BatchGeocoder");
+//                .setAppName("BatchGeocoder")
+//                .setMaster("local");
         conf.set("spark.serializer", KryoSerializer.class.getName());
         conf.set("spark.kryo.registrator", GeoSparkKryoRegistrator.class.getName());
 
