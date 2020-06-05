@@ -16,7 +16,7 @@ Geocoding millions of address points is painful, time consuming, and often a ver
 
 We quickly discovered that standard approaches to geocoding, either through commercial services or existing open source platforms, couldn't produce results that were accurate, fast, and cost-effective for the NFIRS data,  So we launched this project, codenamed 'Wandering Moose', to solve some aspects of spatial analysis on huge datasets for downstream spatial analysis.  Trade-offs, though, are inevitable, and focused on speed and cost at the cost of a bit accuracy.  We made this tradeoff since our use cases didn't require roof-top accuracy, and being "close enough" was "good enough" for what we wanted.   
 
-Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (Server or Docker) with code, examples, and sample result outputs. <a href="#getting-started">See Documentation Section.</a>
+Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (<a href="#api-webserver">WebServer</a> or <a href="#docker-setup">Docker</a>) with code, examples, and sample result outputs. <a href="#getting-started">See Documentation Section.</a>
 
 ## Methodological Approach
 
@@ -38,14 +38,14 @@ COMING SOON
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 You can run the project either by spinning up an API service (locahost:8080) which will geocode addresses sequentially or run in batch mode using Spark-on-YARN service using CDH cluster. Both of these runtimes require you to have: 
-1) <a href="#build-jar">JAR file built</a> from the project codebase
-2) Location to <a href="#lucene-index">Lucene Indexes</a>
-3) Address Parsing <a href="#pre-requisites">libraries</a>
-4) <a href="#config-files">Configuration files</a> to control geocoding parameters (`driver.ini` for batch mode and `vertx-conf.json` for API mode)
+1) <a href="#building-the-jar">JAR file built</a> from the project codebase
+2) Location to <a href="#build-lucene-index">Lucene Indexes</a>
+3) Address Parsing <a href="#prerequisites">libraries</a>
+4) <a href="#create-configurations-file">Configuration files</a> to control geocoding parameters (`driver.ini` for batch mode and `vertx-conf.json` for API mode)
 
-The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the preferred way would be to use the docker.
+The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the preferred way would be to use the <a href="#docker-setup">docker setup.</a>.
 
-#### [Prerequisites](#pre-requisites) -
+#### [Prerequisites](#prerequisites)
 
   - Install libpostal from [here](https://github.com/openvenues/libpostal#installation-maclinux)
   - Install Java bindings(jpostal) to libpostal from [here](https://github.com/openvenues/jpostal#building-jpostal)
@@ -57,7 +57,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
   sudo apt-get install git maven
   ```
 
-#### [Building the JAR](#build-jar) -
+#### [Building the JAR](#building-the-jar)
 
   ```
   git clone https://github.com/NFPA/LocationTools.git
@@ -66,7 +66,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
 
   This generates JAR named `location-tools-1.0-SNAPSHOT.jar` in your `target` directory.
 
-#### [Create Configurations File](#config-files) -
+#### [Create Configurations File](#create-configurations-file)
 
   See sample configuration files `drivier.ini` and `vertx-conf.json` in project root folder.
 
@@ -80,7 +80,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
   The `vertx-conf.json` contains params for the webserver. 
 
 
-#### [Build Lucene Index](#lucene-index) -
+#### [Build Lucene Index](#build-lucene-index)
 
   [ **Note: Make sure you have about ~30G for complete US build** ]
 
@@ -118,9 +118,9 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
     ```
 
 ## Deployment
-Now that you have the JAR file, location for address parsers(jpostal) and location for generated lucene indexes. The app can be deployed using a simple JAVA API webserver using vertx or batch mode using a cluster setup.
+Now that you have the JAR file, location for address parsers(jpostal) and location for generated lucene indexes. The app can be deployed using a simple JAVA <a href="#api-webserver">API webserver</a> using vertx or batch mode using a <a href="#spark-cluster-mode">cluster setup.</a>
 
-#### API WebServer - 
+#### [API WebServer](#api-webserver)
   
   Starting the web server with below command creates two endpoints 
   `/geocoder/v1` - geocoding which can take two arguments `address` and `n` number of results
@@ -224,7 +224,7 @@ Now that you have the JAR file, location for address parsers(jpostal) and locati
 }
   ```
 
-#### Spark Cluster mode - 
+#### [Spark Cluster mode](#spark-cluster-mode) 
 
  Our assumption is you have already setup a CDH cluster with SparkOnYARN enabled. Please see Cloudera documentation how to [Run Spark application on YARN](https://docs.cloudera.com/documentation/enterprise/5-13-x/topics/cdh_ig_running_spark_on_yarn.html) 
   
@@ -256,6 +256,55 @@ Now that you have the JAR file, location for address parsers(jpostal) and locati
 #### Tuning Spark Application
 
   [Tuning Spark Applications](https://docs.cloudera.com/documentation/enterprise/5-13-x/topics/admin_spark_tuning1.html)
+
+## [Docker Setup](#docker-setup)
+  
+  #### [Build your own docker image](#build-your-own-docker-image)
+   
+  > Docker needs ~3 GB disk space to download libpostal data. We provide a pre-build lucence index for Masschusetts and all US Census Shapefile Data which is stored in S3. Provision sufficient space ~10GB for all states lucene index(unzipped). 
+  
+  ##### [Sample build using one state](#sample-build-using-one-state) 
+  (Massachusetts)
+
+  ```bash
+    git clone https://github.com/NFPA/LocationTools.git
+    cd LocationTools
+    mvn clean install
+    docker image build -t nfpa-location-tools .
+    docker container run -p 8080:8080 nfpa-location-tools
+  ```
+  These steps will automate most of the setup and run API webserver on port 8080. You can refer Dockerfile in project folder for more details. As you see it uses `build_libpostal.sh`, `build_jpostal.sh`, `onstart-docker.sh` and `vertx-docker-conf.json` scripts.
+
+   Refer <a href="#api-webserver">API WebServer</a> section on how to query the endpoints. 
+
+
+  ##### [US build](#us-build)
+
+  To run the US build edit the `onstart-docker.sh` file and change `BUILD` variable to `all` instead of `sample` and then run the below commands again:
+
+  ```bash
+  docker image build -t nfpa-location-tools .
+  docker container run -p 8080:8080 nfpa-location-tools
+  ```
+  Refer <a href="#api-webserver">API WebServer</a> section on how to query the endpoints.
+  
+  ##### [Exporting Docker Image](#exporting-docker-image)
+
+  You can export the image as tar file using the below command
+
+  ```bash
+    docker save -o nfpa-location-tools.tar nfpa-location-tools:latest
+  ```
+  
+  #### [Running with Pre-built docker image](#running-with-pre-built-docker-image)
+  See <a href="#build-your-own-docker-image">Build your own docker</a> section to generate a pre-built docker image
+  
+  Load and run the image file 
+  
+  ```bash
+    docker load --input nfpa-location-tools.tar
+    docker container run -p 8080:8080 nfpa-location-tools:latest
+  ```
 
 ## Additional Documentation
 
