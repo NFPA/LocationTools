@@ -12,11 +12,11 @@ LocationTools is an open source platform developed under the direction of data s
 We're looking for partners to help maintain and grow LocationTools.  If you're interested, please reach out to us at XXX@XXXX.
 
 ## Motivation
-Geocoding millions of address points is painful, time consuming, and often a very expensive process. That, however, is the problem NFPA encountered with geocoding fire department response information from NFIRS ( [National Fire Incident Reporting System](https://www.usfa.fema.gov/data/nfirs/index.html) ), a data set dissemenated by annually the United States Fire Adminstration (USFA) containing information 20,000+ fire departments across the United States. A single year of  NFIRS data contains records of 20-25 million fire department. While individaul fire departments often collect and store geolocation data for the incidents that they respond to, the public data provdided by USFA only contains street addresses for those incidents.  Complicating matters, those street addresses are often only partially filled out, leaving us with a very large amount of very messy data.
+Geocoding millions of address points is painful, time consuming, and often a very expensive process. That, however, is the problem NFPA encountered with geocoding fire department response information from NFIRS ( [National Fire Incident Reporting System](https://www.usfa.fema.gov/data/nfirs/index.html) ), a data set dissemenated by annually the United States Fire Adminstration (USFA) containing information 20,000+ fire departments across the United States. A single year of  NFIRS data contains records of 20-25 million fire incidents. While individaul fire departments often collect and store geolocation data for the incidents that they respond to, the public data provdided by USFA only contains street addresses for those incidents.  Complicating matters, those street addresses are often only partially filled out, leaving us with a very large amount of very messy data.
 
 We quickly discovered that standard approaches to geocoding, either through commercial services or existing open source platforms, couldn't produce results that were accurate, fast, and cost-effective for the NFIRS data,  So we launched this project, codenamed 'Wandering Moose', to solve some aspects of spatial analysis on huge datasets for downstream spatial analysis.  Trade-offs, though, are inevitable, and focused on speed and cost at the cost of a bit accuracy.  We made this tradeoff since our use cases didn't require roof-top accuracy, and being "close enough" was "good enough" for what we wanted.   
 
-Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (Server or Docker) with code, examples, and sample result outputs. See Documentaion Section.
+Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (Server or Docker) with code, examples, and sample result outputs. <a href="#getting-started">See Documentation Section.</a>
 
 ## Methodological Approach
 
@@ -34,18 +34,18 @@ COMING SOON
 * [CDH](https://docs.cloudera.com/documentation/enterprise/6/6.3/topics/installation.html) - For Cluster Deployment
 * [Docker](https://www.docker.com/) - For container based Deployment
 
-## Getting Started
+## [Getting Started](#getting-started)
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 You can run the project either by spinning up an API service (locahost:8080) which will geocode addresses sequentially or run in batch mode using Spark-on-YARN service using CDH cluster. Both of these runtimes require you to have: 
-1) JAR file built from the project codebase
-2) Location to Lucene Indexes
-3) Address Parsing libraries 
-4) Configuration files to control geocoding parameters (`driver.ini` for batch mode and `vertx-conf.json` for API mode)
+1) <a href="#build-jar">JAR file built</a> from the project codebase
+2) Location to <a href="#lucene-index">Lucene Indexes</a>
+3) Address Parsing <a href="#pre-requisites">libraries</a>
+4) <a href="#config-files">Configuration files</a> to control geocoding parameters (`driver.ini` for batch mode and `vertx-conf.json` for API mode)
 
 The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the preferred way would be to use the docker.
 
-#### Prerequisites - 
+#### [Prerequisites](#pre-requisites) -
 
   - Install libpostal from [here](https://github.com/openvenues/libpostal#installation-maclinux)
   - Install Java bindings(jpostal) to libpostal from [here](https://github.com/openvenues/jpostal#building-jpostal)
@@ -57,7 +57,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
   sudo apt-get install git maven
   ```
 
-#### Building the JAR - 
+#### [Building the JAR](#build-jar) -
 
   ```
   git clone https://github.com/NFPA/LocationTools.git
@@ -66,7 +66,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
 
   This generates JAR named `location-tools-1.0-SNAPSHOT.jar` in your `target` directory.
 
-#### Create Configurations File - 
+#### [Create Configurations File](#config-files) -
 
   See sample configuration files `drivier.ini` and `vertx-conf.json` in project root folder.
 
@@ -80,7 +80,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
   The `vertx-conf.json` contains params for the webserver. 
 
 
-#### Build Lucene Index - 
+#### [Build Lucene Index](#lucene-index) -
 
   [ **Note: Make sure you have about ~30G for complete US build** ]
 
