@@ -61,7 +61,7 @@ The setup is tried and tested only on Linux/Ubuntu 16.04, for Windows the prefer
 
   ```
   git clone https://github.com/NFPA/LocationTools.git
-  mvn clean install
+  sudo mvn clean install
   ```
 
   This generates JAR named `location-tools-1.0-SNAPSHOT.jar` in your `target` directory.
