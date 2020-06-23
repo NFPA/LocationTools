@@ -1,4 +1,4 @@
-# LocationTools: Geocoding Huge Datasets
+# LocationTools: Geocoding Large Datasets
 
 <p align="left">
   <img src="logo/NFPA_logo.png" height="80" width="80" title="National Fire Protection Association">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
