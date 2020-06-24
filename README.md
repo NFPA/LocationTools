@@ -20,7 +20,20 @@ Whlie this tool is initially geared towards NFIRS type dataset, we presume that 
 
 ## Methodological Approach
 
-COMING SOON
+Open source tools such as POSTGIS do support geocoding, but there is sufficient execution bottleneck due to limited distribution capabilities. Therefore, geocoding millions of records becomes painful and time-consuming. We wanted to scale this processing on multiple machines with multiple cores to achieve maximum throughput with least amount of latency.
+
+[TIGER/Line Database](https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/tiger-geo-line.html) is an extensive collection of geographic and cartographic information of United States from the US Census Bureau. The shapefile includes polygon boundaries of geographic areas and features, linear features including roads and hydrography, and point features. They do not contain any sensitive data.
+
+We created a JAVA based wrapper to download specific version and layers from Line Shapefiles, [GeoSpark](https://datasystemslab.github.io/GeoSpark/) utilities convert all Shapefiles as DataFrames and join specific attribute types (like Faces, Edges etc.) into one huge CSV file for indexing (Query used for joining is provided in project's resource folder).
+
+For indexing, [Apache Lucene](https://lucene.apache.org/) and [JTS Topology Suite](https://locationtech.github.io/jts/) is used for non-GIS and GIS related fields respectively. Lucence’s Spatial package contains different Spatial Strategies to create and index spatial data, we have used [SpatialPrefixTrees](https://lucene.apache.org/core/7_4_0/spatial-extras/org/apache/lucene/spatial/prefix/tree/SpatialPrefixTree.html) that decomposes geographic shapes into variable length strings with precision. Each string corresponds to a rectangular spatial region. This is also referred to as “Grid” or “Tiles”. Each line in the above CSV is converted to a Lucene document to be indexed. Size of the index also depends on the precision of geohash used for constructing the grid.
+
+For geocoding (searching the index), we added two ways of doing it either with single address, or a batch of addresses. For both, Jpostal is used to parse and normalize the input address into multiple components (House No., Street Name, State, ZIP etc.) It constructs the Composite Query based on quality of the parsed components from Jpostal. Searching single address just prints the reusults to standard output. Batch geocoding uses a [Spark RDD](https://spark.apache.org/docs/latest/rdd-programming-guide.html) utilities to map the input batch DataFrames as partitions, parallelize execution and perform fast in-memory searching. We created a GeocodeWrapper that maps raw output of geocoder into multiple output formats like JSON, String or ScalaMap for Hive. We used ScalaMap to directly create HIVE output table for batch geocoding (All resources are in the Utils folder).
+
+For Reverse Geocoding, we use the same Spatial Strategies mentioned above to convert the LAT, LON to point in KM and find all results within specified distance sorted by closest to farthest.
+
+All results were benchmarked with CDH cluster with about 224 cores capacity (7 Datanodes 32cores each). About 25 Million records take 12-14hrs which was significantly better than POSTGIS time which took weeks.
+
 
 ## Built With
 
