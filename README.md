@@ -16,7 +16,7 @@ Geocoding millions of address points is painful, time consuming, and often a ver
 
 We quickly discovered that standard approaches to geocoding, either through commercial services or existing open source platforms, couldn't produce results that were accurate, fast, and cost-effective for the NFIRS data,  So we launched this project, codenamed 'Wandering Moose', to solve some aspects of spatial analysis on huge datasets for downstream spatial analysis.  Trade-offs, though, are inevitable, and focused on speed and cost at the cost of a bit accuracy.  We made this tradeoff since our use cases didn't require roof-top accuracy, and being "close enough" was "good enough" for what we wanted.   
 
-Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (<a href="#api-webserver">WebServer</a> or <a href="#docker-setup">Docker</a>) with code, examples, and sample result outputs. <a href="#getting-started">See Documentation Section.</a>
+Whlie this tool is initially geared towards NFIRS type dataset, we presume that it can be extended to any dataset with address fields. We provide you with sufficient documentation related to how it can be setup in different ways (<a href="#api-webserver">WebServer</a> or <a href="#docker-setup">Docker</a>) with code, examples, and sample result outputs. <a href="#getting-started">See the Getting Started section below for more information.</a>
 
 ## Methodological Approach
 
