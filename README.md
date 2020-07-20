@@ -4,7 +4,7 @@
   <img src="logo/NFPA_logo.png" height="80" width="80" title="National Fire Protection Association">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="logo/WPI_logo.png" height="80" width="80" title="Worcester Polytechnic Institute">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="logo/cldr_corp_logo_color_rgb_101_640x320.png" height="80" width="160" title="Cloudera Inc.">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="logo/Clairvoyant_logo_tw.png" height="80" width="80" title="Clairvoyant">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="logo/Clairvoyant_logo_fb.png" height="120" width="120" title="Clairvoyant">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </p>
 
 LocationTools is an open source platform developed under the direction of data scientists National Fire Protection Association (NFPA) to effeciently geocode very large amounts of data.  To do bulk geolocation quickly, LocationTools makes use of a suite of technologies such as Spark, Lucene, and Libpostal to conduct geocoding on a Cloudera Hadoop network. LocationTools also provides a more easily managed web API for single address geocoding that a user can easily implement using Docker.  Finally, LocationTools uses U.S. Census TIGER files as its base layer of street address location data.  To learn how to use LocationTools on your machine or cluster, please read the below information or visit the project webpage at https://nfpa.github.io/LocationTools. 
