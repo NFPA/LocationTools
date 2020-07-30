@@ -34,7 +34,7 @@ For Reverse Geocoding, we use the same Spatial Strategies mentioned above to con
 
 All results were benchmarked with CDH cluster with about 224 cores capacity (7 Datanodes 32cores each). About 25 Million records take 12-14hrs which was significantly better than POSTGIS time which took weeks.
 
-<p align="left"><img src="logo/GeocodingArchitecture.png" title="Geocoding Architecture" height="540"/><br><i>Figure 1.0 - Architectural Diagram</i></br></p>
+<p align="left"><img src="logo/GeocodingArchitecture.png" title="Geocoding Architecture" height="540"/><br><i>Figure 1.0 - Geocoding Architecture</i></br></p>
 
 ## Built With
 
