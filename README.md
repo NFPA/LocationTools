@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="logo/NFPA_logo.png" height="80" width="80" title="National Fire Protection Association">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="logo/WPI_logo.png" height="80" width="80" title="Worcester Polytechnic Institute">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="logo/WPI_Inst_Prim_FulClr.png" height="80" title="Worcester Polytechnic Institute">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="logo/cldr_corp_logo_color_rgb_101_640x320.png" height="80" width="160" title="Cloudera Inc.">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   <img src="logo/Clairvoyant_logo_fb.png" height="120" width="120" title="Clairvoyant">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </p>
