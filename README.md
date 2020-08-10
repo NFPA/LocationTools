@@ -9,7 +9,7 @@
 
 LocationTools is an open source platform developed under the direction of data scientists at the National Fire Protection Association (NFPA) that efficiently geocodes very large amounts of data.  To do bulk geolocation quickly, LocationTools makes use of a suite of technologies such as Spark, Lucene, and Libpostal to conduct geocoding on a Cloudera Hadoop network. LocationTools also provides a more easily managed web API for single address geocoding that a user can easily implement using Docker.  Finally, LocationTools uses U.S. Census TIGER files as its base layer of street address location data.  To learn how to use LocationTools on your machine or cluster, please read the below information or visit the project webpage at https://nfpa.github.io/LocationTools. 
 
-We're looking for partners to help maintain and grow LocationTools.  If you're interested, please reach out to us at XXX@XXXX.
+We're looking for partners to help maintain and grow LocationTools.  If you're interested, please reach out to us at datasolutions@nfpa.org
 
 ## Motivation
 Geocoding millions of address points is technically challenging, time consuming, and often a very expensive process.  NFPA encountered those problems when geocoding fire department response information from NFIRS ( [National Fire Incident Reporting System](https://www.usfa.fema.gov/data/nfirs/index.html) ), a data set dissemenated by annually the United States Fire Adminstration (USFA) containing information from 20,000+ fire departments across the United States. A single year of NFIRS data contains records of 20-25 million incidents that fire departments responded to, including events such as structure fires, EMS calls, and HAZMAT incidents. While individaul fire departments often collect and store geolocation data for the incidents that they respond to, the public data provdided by USFA only contains street addresses for those incidents.  Complicating matters, those street addresses are often only partially filled out, leaving us with a very large amount of very messy data.
@@ -28,7 +28,7 @@ We created a JAVA based wrapper to download specific version and layers from Lin
 
 For indexing, [Apache Lucene](https://lucene.apache.org/) and [JTS Topology Suite](https://locationtech.github.io/jts/) is used for non-GIS and GIS related fields respectively. Lucence’s Spatial package contains different Spatial Strategies to create and index spatial data, we have used [SpatialPrefixTrees](https://lucene.apache.org/core/7_4_0/spatial-extras/org/apache/lucene/spatial/prefix/tree/SpatialPrefixTree.html) that decomposes geographic shapes into variable length strings with precision. Each string corresponds to a rectangular spatial region. This is also referred to as “Grid” or “Tiles”. Each line in the above CSV is converted to a Lucene document to be indexed. Size of the index also depends on the precision of geohash used for constructing the grid.
 
-For geocoding (which, in our approach, corresponds to searching a Lucene index), we added two ways of doing it either with single address, or a batch of addresses. For both, Jpostal is used to parse and normalize the input address into multiple components (House No., Street Name, State, ZIP etc.) It constructs the Composite Query based on the quality of the parsed components from Jpostal. Searching single address just prints the reusults to standard output. Batch geocoding uses a [Spark RDD](https://spark.apache.org/docs/latest/rdd-programming-guide.html) utilities to map the input batch DataFrames as partitions, parallelize execution and perform fast in-memory searching. We created a GeocodeWrapper that maps raw output of geocoder into multiple output formats like JSON, String or ScalaMap for Hive. We used ScalaMap to directly create HIVE output table for batch geocoding (All resources are in the Utils folder).
+For geocoding (which, in our approach, corresponds to searching a Lucene index), we added two ways of doing it either with single address, or a batch of addresses. For both, Jpostal is used to parse and normalize the input address into multiple components (House No., Street Name, State, ZIP etc.) It constructs the Composite Query based on the quality of the parsed components from Jpostal. Searching single address just prints the results to standard output. Batch geocoding uses a [Spark RDD](https://spark.apache.org/docs/latest/rdd-programming-guide.html) utilities to map the input batch DataFrames as partitions, parallelize execution and perform fast in-memory searching. We created a GeocodeWrapper that maps raw output of geocoder into multiple output formats like JSON, String or ScalaMap for Hive. We used ScalaMap to directly create HIVE output table for batch geocoding (All resources are in the Utils folder).
 
 For Reverse Geocoding, we use the same Spatial Strategies mentioned above to convert the LAT, LON to point in KM and find all results within specified distance sorted by closest to farthest.
 
@@ -330,13 +330,13 @@ Now that you have the JAR file, location for address parsers(jpostal) and locati
   * **Mohammed Ayub** - [NFPA](https://nfpa.org/)
   * **Joe Gochal** - [NFPA](https://nfpa.org/)
   
-  See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## Acknowledgments
 
   * [Clairvoyant](https://clairvoyantsoft.com/) - Shekhar Vemuri, Jason Yates, and team for their help in framing initial versions of the project.
   * [Cloudera](https://www.cloudera.com/) Team for their support.
   * [NFPA Data Analytics](https://www.nfpa.org/News-and-Research/Data-research-and-tools/Data-solutions) Team for testing and providing feedback
+  * Initially funded as part of NFPA - WPI [Data Science Graduate Qualifying Project (GQP)](https://www.wpi.edu/academics/departments/data-science/graduate-qualifying-project) Initiative.
 
 ## License
 
