@@ -21,7 +21,7 @@
         <spark.compatible.verison>2.3</spark.compatible.verison>
 
         <main.verticle>org.nfpa.spatial.APIVerticle</main.verticle>
-        <vertex.version>3.8.2</vertex.version>
+        <vertex.version>3.9.4</vertex.version>
     </properties>
 
     <dependencies>
