@@ -12,7 +12,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <geotools.version>22-SNAPSHOT</geotools.version>
         <spark.version>2.3.3</spark.version>
-        <hadoop.version>2.7.7</hadoop.version>
+        <hadoop.version>3.2.3</hadoop.version>
         <dependency.scope>compile</dependency.scope>
         <lucene.version>8.2.0</lucene.version>
         <spark.version>2.3.3</spark.version>
