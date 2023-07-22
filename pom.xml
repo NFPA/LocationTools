@@ -190,7 +190,7 @@
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
             <artifactId>zip4j</artifactId>
-            <version>2.2.4</version>
+            <version>2.11.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.wink/wink-json4j -->
